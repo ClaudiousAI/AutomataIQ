@@ -1,0 +1,1816 @@
+Yes. The right way to use Claude Code here is not to give it the entire system specification in one giant prompt.
+
+I recommend a controlled build sequence where each prompt:
+
+Reads the master design.
+Inspects what already exists.
+Implements one bounded section.
+Runs tests.
+Documents decisions.
+Does not jump ahead.
+Leaves the repository in a working state before the next prompt.
+
+The prompts below are designed specifically for Claude Code, and they assume the product name is AutomataIQ.
+
+Important: Do not ask Claude Code to build everything at once. Give it one chunk at a time, in the order below.
+
+
+CHUNK 00 — Master instruction / project constitution
+----------------------------------------------------------
+
+Give this first.
+
+SAP AUTOMATION INTELLIGENCE  Enterprise Product Blueprint & Complete Solution Design  Discover what is new. Understand how it works. Identify what to automate. Decide what to build.  Design basis: the supplied Vibe Coding guide recommends six pre-code documents—PRD, TRD, App Flow, UI/UX Design Brief, Backend Schema and Implementation Plan—to remove ambiguity before an AI coding agent starts work. fileciteturn0file0L9-L27  Scope: this is a target-state enterprise design, not an MVP. It expands that six-document discipline into the complete 10-capability platform requested.       1. Executive Vision  Product name: SAP Automation Intelligence Engine (SAIE)  SAIE continuously monitors the SAP ecosystem, detects meaningful changes, extracts automation patterns, reconstructs technical architecture, validates evidence, identifies business opportunities, scores buildability and produces recurring intelligence reports.  The central question is not “What did SAP publish?” It is: “What changed, what automation pattern does it reveal, where can it be applied, and what should we build or replace because of it?”  Primary users  ·         SAP enterprise and solution architects.  ·         SAP automation / CoE leaders.  ·         SAP migration and clean-core teams.  ·         BTP, integration and development teams.  ·         Industry solution teams.  ·         Innovation, consulting and product leadership.  Primary outcome  A continuously updated, evidence-backed repository of SAP automation intelligence plus a ranked backlog of reusable automation and product opportunities.       2. Capability 01 — Discovery & Source Intelligence  ·         Maintain a Source Registry with source ID, URL, type, domain, industry, priority, schedule, last crawl, content hash and active status.  ·         Use source-specific acquisition: HTML, RSS/API, structured documentation and sitemap discovery where available.  ·         Run continuous ingestion while using Saturday as the six-day reporting boundary.  ·         Tier sources by authority: SAP documentation, SAP announcements, SAP Community, partner/customer evidence and general discovery.  ·         Preserve URL, retrieval timestamp and content version for every finding.  ·         Detect source-level changes before expensive semantic analysis.  ·         Respect robots.txt, terms, rate limits and authentication boundaries.  3. Capability 02 — Change Detection & Evidence Intelligence  ·         Store policy-compliant source versions or normalized snapshots.  ·         Generate lexical and semantic diffs.  ·         Classify changes as new capability, enhancement, documentation clarification, deprecation, architecture change, event announcement or no meaningful change.  ·         Assign evidence confidence based on authority, recency, corroboration and specificity.  ·         Merge multiple sources into one canonical finding.  ·         Label facts as confirmed, inferred or speculative.  ·         Maintain an evidence trail for every priority finding.  4. Capability 03 — Automation Pattern Intelligence  ·         Extract business process, business area, industry, SAP products, capability, trigger, inputs, decisions, workflow, human involvement and outcome.  ·         Classify workflow, RPA, document processing, API integration, event-driven, AI-assisted, agentic, predictive or custom automation.  ·         Capture the business problem and pre-automation process.  ·         Record benefits only when stated; mark inferred benefits explicitly.  ·         Map findings across FI/CO, SD, MM, PP, QM, PM/EAM, EWM, TM, PS, PLM, MDG, GRC, Treasury, CRM, HCM, procurement and industries.  ·         Assign canonical Automation IDs and temporal lineage.  5. Capability 04 — Architecture Reconstruction  ·         Extract trigger → data source → processing → AI/rules → decision → workflow → API/event → target → monitoring.  ·         Identify SAP technologies when evidenced: S/4HANA, BTP, Integration Suite, APIs, Event Mesh, Build, Process Automation, AI, Data Cloud, Datasphere, HANA, Cloud ALM and related services.  ·         Separate confirmed from inferred components.  ·         Generate logical architecture diagrams and text summaries.  ·         Identify synchronous API, asynchronous event, batch, workflow, document and agent invocation patterns.  ·         Capture human-in-loop controls, approvals and exception paths.  ·         Flag security, audit, resilience, observability and data-governance considerations for validation.  6. Capability 05 — Opportunity Validation  ·         Check whether the discovery is standard, configurable, extensible, partner-provided or genuinely missing.  ·         Map capability to customer process pain and manual effort.  ·         Identify ECC-to-S/4 and clean-core implications.  ·         Classify path: standard SAP, configuration, extension, BTP automation, custom app, AI agent or external integration.  ·         Assess reuse across customers and industries.  ·         Track dependencies on release, edition, licensing and services.  ·         Create a human validation checklist.  7. Capability 06 — Scoring & Prioritization  ·         Score Business Value, Automation Potential, Technical Feasibility, Reusability, Demand, Differentiation and Clean-Core relevance.  ·         Apply a transparent complexity penalty.  ·         Store numerical score plus rationale.  ·         Allow reviewer override with an explanation.  ·         Rank opportunities for the Saturday report and backlog.  8. Capability 07 — Knowledge Graph & Intelligence Repository  ·         Link sources, findings, automation patterns, products, processes, industries, technologies, APIs, events, architectures and opportunities.  ·         Support temporal queries such as what changed in the last 30/90/180 days.  ·         Support cross-domain queries such as AI automation affecting MM and manufacturing.  ·         Store evidence and confidence at fact/relationship level where practical.  ·         Maintain lineage from source → extraction → validation → score → report.  ·         Provide semantic search plus structured filters.  ·         Enable related-pattern and reusable-architecture recommendations.  9. Capability 08 — Reporting & Saturday Intelligence  ·         Generate executive summary, meaningful changes, automation findings and top opportunities.  ·         Provide detailed Automation Cards with architecture and evidence.  ·         Explain what changed and why it matters.  ·         Include domain, industry and technology heat maps.  ·         Include ECC-to-S/4 and clean-core opportunity flags.  ·         Generate PDF, HTML and JSON/CSV exports.  ·         Allow configurable recipients, filters, scoring weights and schedule.  10. Capability 09 — User Experience, Governance & Operations  ·         Provide Dashboard, Discovery, Automation, Architecture, Opportunity, Evidence, Reports and Administration workspaces.  ·         Provide RBAC, audit logs, model/prompt versioning and evidence traceability.  ·         Monitor source health, agent health, retries, dead-letter queues and cost budgets.  ·         Route low-confidence and high-impact items to human review.  ·         Enforce tenant isolation and least privilege.  ·         Provide alerts and operational runbooks.  11. Capability 10 — Continuous Improvement & Productization  ·         Capture reviewer feedback on relevance, correctness, architecture and scoring.  ·         Maintain quality metrics and benchmark datasets.  ·         Continuously evolve taxonomies and scoring calibration.  ·         Support customer-specific source packs and private knowledge spaces.  ·         Expose future APIs for automation-opportunity and architecture retrieval.  ·         Future recommendation layer: what to build, what to replace and what reusable accelerator to create.       12. Document 01 — PRD  The supplied guide calls the PRD the north star and recommends the problem, target user, value proposition, features, user stories, out-of-scope items and success metrics. fileciteturn0file0L30-L59  Product objective  Create a trusted SAP automation intelligence system that continuously discovers ecosystem changes and converts them into actionable, evidence-backed automation and product opportunities.  Core features  ·         Source registry and scheduled acquisition.  ·         Change detection and semantic deduplication.  ·         Automation extraction and classification.  ·         Architecture reconstruction.  ·         Evidence/provenance management.  ·         Opportunity validation and scoring.  ·         Knowledge graph and semantic search.  ·         Interactive intelligence workspace.  ·         Saturday report generation.  ·         Continuous learning and governance.  Representative user stories  ·         As an SAP architect, I want new automation capabilities by business domain so I can evaluate relevance.  ·         As an automation lead, I want ranked opportunities so I can prioritize reusable solutions.  ·         As a migration architect, I want clean-core and ECC-to-S/4 implications so I can identify replacement opportunities.  ·         As a technical architect, I want evidence-backed architecture extraction so I can understand how a capability works.  ·         As a practice leader, I want a Saturday report so I can brief stakeholders without manually scanning dozens of sources.  ·         As a reviewer, I want to correct classifications and scores so the system improves.  Out of scope / controlled boundaries  ·         Autonomous production deployment of customer SAP changes.  ·         Unreviewed claims presented as confirmed SAP facts.  ·         Bypassing authentication, robots.txt, paywalls or site controls.  ·         Production code generation without architecture/security review.  ·         Treating generic web commentary as authoritative technical evidence.  Success metrics  ·         ≥85% precision for genuinely-new findings after human evaluation.  ·         ≥80% relevance for automation-related findings.  ·         ≥90% duplicate consolidation for multi-source coverage.  ·         ≥90% of priority findings have traceable evidence.  ·         ≥80% of reviewed architecture summaries judged useful by SAP architects.  ·         Improving human acceptance rate of top-ranked opportunities.  ·         Saturday report generated on schedule and auditable.       13. Document 02 — TRD  The reference guide defines the TRD as the technical blueprint for framework, backend, database, authentication, hosting, APIs, libraries, environment variables and constraints. fileciteturn0file0L62-L93          Layer         Target technology         Purpose             Web UI         Next.js +   TypeScript         Enterprise   workspace             API         Python   FastAPI         Typed service   APIs             Agent   orchestration         Workflow/orchestration   framework         Controlled   multi-agent execution             Workers         Python async   workers         Crawl/enrich/report   jobs             Database         PostgreSQL         Transactional   metadata             Vector         pgvector /   vector store         Semantic   retrieval             Graph         Neo4j or   graph model         Relationships             Object   storage         S3-compatible         Snapshots/reports             Queue         Kafka /   managed queue / Redis Streams         Decoupled   processing             Search         OpenSearch /   PostgreSQL FTS         Search and   facets             LLM         Enterprise   model gateway         Extraction/reasoning             Observability         OpenTelemetry         Metrics/logs/traces             Deployment         Kubernetes /   managed containers         Scalable   services             Identity         OIDC/SAML-capable   IdP         SSO/RBAC        Technical principles  ·         Evidence-first and provenance-preserving.  ·         Deterministic preprocessing before generative reasoning.  ·         Human-in-the-loop for high-impact decisions.  ·         Model-agnostic LLM gateway.  ·         Asynchronous event-driven processing.  ·         Idempotent, replayable jobs.  ·         Version prompts, models and classifiers.  ·         Least privilege and tenant isolation.  ·         Secure secret management.  ·         Full auditability.       14. Document 03 — App Flow  The source guide says app flow should map screens, navigation, entry points, authentication, core journeys, edge cases and redirects. fileciteturn0file0L96-L125          Area         Pages             Home         Overview /   Weekly Pulse             Discovery         Sources /   Crawl Runs / Changes / Errors             Intelligence         Automation   Findings / Detail / Architecture             Opportunities         Backlog /   Detail / Validation             Knowledge         Products /   Processes / Industries / Technologies / APIs             Reports         Saturday   Reports / Detail / Export             Governance         Review Queue   / Evidence / Audit             Administration         Users /   Sources / Schedules / Scoring / Agents / Models             Settings         Profile /   Notifications / Preferences        Core journeys  Discover: Dashboard → New Changes → Finding → Evidence → Automation Card → Architecture → Opportunity → Backlog.  Evaluate: Opportunity Backlog → Filter → Detail → Evidence → Architecture → Score → Assign → Validate/Reject.  Report: Reports → Current six-day report → Executive summary → Top opportunities → Detailed findings → Evidence → Export.  Agent flow  Scheduler → Acquisition → Parse → Normalize → Hash/Diff → Relevance → Deduplicate → Automation Extraction → Architecture → Evidence → Opportunity → Scoring → Knowledge Graph → Report → Notification.  Edge cases  ·         Unavailable source: retry/backoff, then alert.  ·         Changed page structure: quarantine parser result.  ·         Conflicting sources: retain claims and reduce confidence.  ·         Duplicate: merge under canonical finding.  ·         LLM failure: retry/fallback/review.  ·         Low confidence: do not promote automatically.  ·         Report failure: retry and alert; never publish incomplete report.       15. Document 04 — UI/UX Design Brief  The supplied guide recommends defining visual direction, palette, typography, component style, responsiveness, accessibility and reference patterns. fileciteturn0file0L128-L161  Design direction  Modern enterprise intelligence console: analytical, trustworthy, dense but readable, evidence-first, with clear separation between confirmed facts and AI inference.  Core patterns  ·         Collapsible left navigation.  ·         Executive KPI cards.  ·         Dense sortable/filterable findings tables.  ·         Evidence badges: Confirmed / Corroborated / Inferred / Speculative.  ·         Transparent score badges.  ·         Clickable architecture diagrams.  ·         Source-change timeline.  ·         Evidence side drawers.  ·         Human review queue.  ·         Responsive laptop/tablet layout.  Accessibility  ·         Keyboard navigation and strong contrast.  ·         Do not encode meaning by color alone.  ·         Accessible tables and focus states.  ·         Readable typography and configurable density.  Primary screens  ·         Weekly Pulse Dashboard  ·         Change Explorer  ·         Automation Intelligence Board  ·         Automation Detail  ·         Architecture Viewer  ·         Opportunity Radar  ·         Evidence Explorer  ·         Report Viewer  ·         Review Queue  ·         Source Health  ·         Agent Operations  ·         Administration       16. Document 05 — Backend Schema  The source guide emphasizes tables, columns, keys, relationships, indexes, auth, roles, sensitive fields, storage, events and APIs. fileciteturn0file0L164-L197          Entity         Important fields         Relationships             tenants         id, name,   settings         users,   sources, findings             users         id,   tenant_id, email, role         reviews,   audit             sources         id, url,   type, priority, schedule         crawl_runs,   versions             crawl_runs         id,   source_id, status, metrics         source,   versions             source_versions         id,   source_id, hash, retrieved_at         source,   changes             changes         id,   version_id, type, confidence         findings             findings         id,   canonical_key, title, status         changes,   automations             automations         id,   finding_id, domain, industry, type         architecture,   opportunities             architecture_nodes         id,   automation_id, node_type, name         edges             architecture_edges         id,   automation_id, from, to, relation         nodes             evidence         id,   finding_id, source_id, locator, confidence         finding             opportunities         id,   automation_id, status, score, owner         scores             scores         id,   opportunity_id, metric, value, rationale         opportunity             reports         id,   tenant_id, period, status, file_uri         report_items             report_items         id,   report_id, finding_id, rank         reports/findings             reviews         id, entity,   reviewer, decision, comments         users             agent_runs         id,   agent_type, model, prompt, status         audit             audit_log         id, actor,   action, entity, timestamp         users        Security model  ·         Tenant isolation at every query boundary.  ·         RBAC: platform_admin, tenant_admin, architect, analyst, reviewer, executive, read_only.  ·         Audit administrative and review actions.  ·         Encrypt secrets and sensitive configuration outside application data.  ·         Apply source-content retention and licensing policies.       17. Document 06 — Enterprise Implementation Plan  The supplied guide recommends explicit phases, dependencies and done criteria; it specifically calls for setup, database, authentication, core features, UI polish, testing and deployment. fileciteturn0file0L200-L239          Phase         Goal         Done criteria             1         Product &   Architecture         Approved PRD,   taxonomy, security and target-state architecture             2         Platform   Foundation         Repo, CI/CD,   environments, identity and observability             3         Data   Foundation         DB, vector,   graph, storage and migrations             4         Source   Intelligence         Reliable   replayable ingestion and source health             5         Change   Intelligence         Versioning,   diff, classification and deduplication             6         Automation   Intelligence         Structured   Automation Cards and taxonomy mapping             7         Architecture   Intelligence         Evidence-backed   architecture graph and diagrams             8         Opportunity   Intelligence         Validated,   scored opportunity backlog             9         Knowledge   & Search         Entity   resolution, graph, semantic/faceted search             10         Workspace UX         End-to-end   dashboard and workspaces             11         Reports         Six-day   aggregation, Saturday PDF/HTML/JSON and alerts             12         Governance         Review,   audit, prompt/model registry             13         Evaluation         Golden sets,   regression, precision/recall and quality gates             14         Production   Hardening         HA, DR,   security, cost controls and runbooks             15         Continuous   Learning         Feedback,   calibration and source optimization             16         Productization         Tenant packs,   APIs and external product foundation             18. Multi-Agent Operating Model          Agent         Respons
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+CHUNK 01 — Repository foundation + architecture
+-------------------------------------------------
+
+After Claude responds to Chunk 00, give it this.
+
+Now implement **Phase 1 — Product & Architecture Foundation** for AutomataIQ.
+
+Use the master design as the source of truth.
+
+## OBJECTIVE
+
+Create the foundational repository architecture that all later AutomataIQ capabilities will build upon.
+
+Do not implement the actual SAP crawler or AI agents yet.
+
+## TASKS
+
+### 1. Repository structure
+
+Create a clean enterprise monorepo structure appropriate for the chosen technology stack.
+
+It should clearly separate:
+
+* frontend
+* backend/API
+* workers
+* agent services
+* shared types/contracts
+* database/migrations
+* infrastructure
+* tests
+* documentation
+* configuration
+
+Choose the structure based on the repository's existing state rather than blindly replacing it.
+
+### 2. Architecture documentation
+
+Create/update:
+
+* README
+* architecture overview
+* development setup
+* environment configuration documentation
+* ADR directory
+* coding standards
+* testing strategy
+* security principles
+* agent architecture documentation
+
+### 3. Architectural boundaries
+
+Define clear boundaries for:
+
+* UI
+* API
+* domain services
+* ingestion
+* agent orchestration
+* knowledge layer
+* reporting
+* authentication/authorization
+* persistence
+* observability
+
+### 4. Shared contracts
+
+Create the initial typed contract strategy.
+
+Define conventions for:
+
+* API request/response models
+* domain events
+* agent input/output
+* errors
+* IDs
+* timestamps
+* confidence values
+* provenance references
+
+### 5. Configuration
+
+Establish safe configuration handling.
+
+Support:
+
+* development
+* test
+* staging
+* production
+
+Never commit secrets.
+
+Create `.env.example` or equivalent documentation.
+
+### 6. Observability foundation
+
+Establish the initial strategy for:
+
+* structured logging
+* request IDs
+* correlation IDs
+* agent run IDs
+* metrics
+* tracing
+
+Full observability does not need to be completed yet, but the architecture must support it.
+
+### 7. CI quality gates
+
+Create or update CI checks for:
+
+* formatting
+* linting
+* type checking
+* unit tests
+* build validation
+
+## ACCEPTANCE CRITERIA
+
+The repository must:
+
+* start successfully
+* build successfully
+* run tests successfully
+* have documented architecture
+* have no committed secrets
+* have clear module boundaries
+* have a documented path for future agents and workers
+
+Do not implement SAP source ingestion yet.
+
+At the end, provide the implementation summary and recommend the exact next task.
+
+-------------------------------------------------------------------------------------------------
+CHUNK 02 — Database foundation
+-----------------------------
+Implement **Phase 2 — AutomataIQ Data Foundation**.
+
+Before coding, inspect the existing database setup and preserve compatible work.
+
+## OBJECTIVE
+
+Create the enterprise persistence foundation required for the AutomataIQ intelligence platform.
+
+## CORE ENTITIES
+
+Implement the schema from the master design for:
+
+* tenants
+* users
+* sources
+* crawl_runs
+* source_versions
+* changes
+* findings
+* automations
+* architecture_nodes
+* architecture_edges
+* evidence
+* opportunities
+* scores
+* reports
+* report_items
+* reviews
+* agent_runs
+* audit_log
+
+## REQUIREMENTS
+
+### Database design
+
+Define:
+
+* primary keys
+* foreign keys
+* unique constraints
+* indexes
+* timestamps
+* status fields
+* soft-delete strategy where appropriate
+* tenant ownership where appropriate
+
+Use migrations.
+
+Do not manually modify production schemas outside migrations.
+
+### Provenance
+
+The data model must support:
+
+source
+→ source_version
+→ change
+→ finding
+→ evidence
+→ automation
+→ opportunity
+→ report
+
+The model must preserve lineage.
+
+### Confidence
+
+Create a consistent representation for:
+
+* confirmed
+* corroborated
+* inferred
+* speculative
+
+Do not allow confidence semantics to vary between agents.
+
+### Agent execution
+
+`agent_runs` must be capable of recording at minimum:
+
+* agent type
+* run ID
+* parent run
+* model
+* prompt/version
+* start time
+* end time
+* status
+* token/cost metadata where available
+* error
+* input/output references
+
+### Audit
+
+Audit important:
+
+* administrative actions
+* source changes
+* review decisions
+* scoring overrides
+* knowledge mutations
+
+### Search preparation
+
+Prepare the schema for:
+
+* full text search
+* vector embeddings
+* semantic retrieval
+* future graph relationships
+
+Do not over-engineer the vector/graph implementation if the repository does not yet require it, but design the data model so it can be added without breaking the domain model.
+
+## TESTING
+
+Add:
+
+* migration tests where practical
+* repository/database integration tests
+* relationship tests
+* tenant isolation tests for data-access logic
+
+## ACCEPTANCE
+
+A clean database can be created from scratch using migrations.
+
+All major relationships are represented.
+
+No business logic is duplicated between database and application unnecessarily.
+
+Document important schema decisions.
+
+Do not implement the SAP crawler yet.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+CHUNK 03 — Authentication, RBAC and governance foundation
+------------------------------------------------------------
+Implement **Phase 3 — Identity, RBAC and Governance Foundation**.
+
+## OBJECTIVE
+
+Establish enterprise-grade identity and authorization foundations before building the intelligence platform.
+
+## ROLES
+
+Support the product roles defined in the master design:
+
+* platform_admin
+* tenant_admin
+* architect
+* analyst
+* reviewer
+* executive
+* read_only
+
+## REQUIREMENTS
+
+Implement:
+
+1. Authentication abstraction suitable for OIDC/SAML-capable enterprise identity providers.
+2. Local development authentication only where necessary.
+3. Role-based authorization.
+4. Tenant isolation.
+5. API authorization middleware/dependencies.
+6. UI route protection.
+7. Audit logging for security-sensitive actions.
+8. Session/token handling according to the chosen architecture.
+9. Secure secret/configuration handling.
+
+## GOVERNANCE
+
+Create the foundation for:
+
+* model registry
+* prompt versioning
+* agent versioning
+* source policy
+* review policy
+* scoring configuration
+* audit trail
+
+Do not implement complex AI governance yet; create the domain boundaries and persistence interfaces.
+
+## SECURITY REQUIREMENTS
+
+Apply:
+
+* least privilege
+* secure password/token practices if local auth exists
+* no secrets in source control
+* tenant-aware database queries
+* safe error messages
+* input validation
+* authorization before sensitive operations
+
+## TESTS
+
+Test:
+
+* each role
+* unauthorized access
+* cross-tenant access
+* admin-only operations
+* audit events
+
+Do not begin source crawling yet.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+CHUNK 04 — Source Registry + SAP source management
+---------------------------------------------------
+Implement **Phase 4 — SAP Source Intelligence Foundation**.
+
+This is the beginning of the actual SAP intelligence engine.
+
+## OBJECTIVE
+
+Create the source registry and source-management subsystem for the SAP ecosystem.
+
+The user-provided master design identifies these major source groups:
+
+1. SAP master catalogs
+2. Core SAP business domains
+3. S/4HANA functional domains
+4. Procurement, Ariba and workforce
+5. Supply chain, manufacturing and logistics
+6. CRM, customer experience, retail and media
+7. SAP technology, automation and development
+8. SAP industry domains
+9. Official technical and innovation sources
+10. SAP migration / clean-core / ECC-to-S/4 sources
+
+Use the supplied source list as the initial source registry.
+
+## SOURCE REGISTRY
+
+Each source should support:
+
+* source ID
+* name
+* URL
+* source type
+* authority level
+* domain
+* industry
+* technology
+* priority
+* crawl frequency
+* enabled/disabled
+* parser strategy
+* last successful crawl
+* last failure
+* content hash
+* status
+
+## SOURCE TYPES
+
+Support at least:
+
+* webpage
+* documentation
+* RSS/feed where available
+* API
+* sitemap
+* structured source
+
+## SOURCE POLICY
+
+Implement policy controls for:
+
+* robots.txt
+* rate limits
+* retry rules
+* request timeouts
+* user agent
+* content size limits
+* allowed domains
+* source-specific parsing
+
+Do not bypass authentication, robots.txt, paywalls or access controls.
+
+## IMPORTANT
+
+Do not simply create a list of URLs.
+
+Create a real source-management subsystem that can later support hundreds/thousands of sources.
+
+## ADMIN FUNCTIONALITY
+
+Provide APIs for:
+
+* create source
+* update source
+* enable/disable source
+* list sources
+* inspect source health
+* trigger manual crawl
+* view crawl history
+
+Add tests.
+
+Do not yet implement advanced semantic analysis.
+------------------------------------------------------------------------------------------------------------
+CHUNK 05 — Six-day crawler / ingestion engine
+-------------------------------------------------
+Implement **Phase 5 — Source Acquisition & Six-Day Ingestion Engine**.
+
+## OBJECTIVE
+
+Build the production-oriented ingestion pipeline that continuously monitors AutomataIQ sources.
+
+The required business schedule is:
+
+* monitor continuously during six working days
+* accumulate findings during the period
+* produce the principal intelligence package on Saturday / day six
+* retain all evidence and intermediate results
+
+The schedule must be configurable; do not hard-code Saturday into business logic.
+
+## PIPELINE
+
+Implement:
+
+Scheduler
+→ Source Selection
+→ Fetch
+→ Parse
+→ Normalize
+→ Extract Metadata
+→ Hash
+→ Store Source Version
+→ Detect Change
+→ Queue Analysis
+
+## REQUIREMENTS
+
+### Scheduler
+
+Support:
+
+* scheduled crawls
+* manual crawls
+* retry jobs
+* source-specific frequency
+* timezone-aware scheduling
+
+### Fetching
+
+Implement:
+
+* timeout
+* retries
+* exponential backoff
+* rate limiting
+* HTTP status handling
+* content-size limits
+* content-type validation
+
+### Parsing
+
+Support HTML first.
+
+Create parser interfaces so future implementations can support:
+
+* RSS
+* XML
+* JSON/API
+* PDF
+* documentation-specific structures
+
+### Normalization
+
+Normalize:
+
+* title
+* URL
+* headings
+* body
+* publication date where available
+* author
+* metadata
+* canonical URL
+
+### Versioning
+
+Every meaningful source snapshot must be associated with a source version and hash.
+
+### Idempotency
+
+Running the same crawl twice must not create duplicate source versions unnecessarily.
+
+### Failure handling
+
+Implement:
+
+* retries
+* dead-letter state
+* failure reason
+* source health metrics
+* alerts/hooks
+
+## OBSERVABILITY
+
+Record:
+
+* crawl duration
+* status
+* HTTP status
+* bytes
+* parsing result
+* new/changed/unchanged
+* errors
+
+## TESTING
+
+Create unit and integration tests using controlled fixtures.
+
+Do not depend on live SAP websites for normal automated tests.
+
+Use mocks/fixtures.
+
+At the end demonstrate:
+
+* source registration
+* successful crawl
+* unchanged content detection
+* changed content detection
+* failed crawl handling.
+------------------------------------------------------------------------------------
+CHUNK 06 — Change detection + semantic deduplication
+------------------------------------------------------
+Implement **Phase 6 — Change Intelligence**.
+
+## OBJECTIVE
+
+Turn raw source versions into meaningful ecosystem changes.
+
+The system must distinguish:
+
+* genuinely new information
+* material updates
+* minor documentation edits
+* duplicate content
+* derivative content
+* unchanged content
+
+## CHANGE PIPELINE
+
+Source Version
+→ Structural Diff
+→ Semantic Diff
+→ Change Classification
+→ Relevance Classification
+→ Duplicate Detection
+→ Canonical Finding Candidate
+
+## CHANGE TYPES
+
+Support:
+
+* NEW_CAPABILITY
+* ENHANCEMENT
+* ARCHITECTURE_CHANGE
+* DEPRECATION
+* DOCUMENTATION_UPDATE
+* NEW_INTEGRATION
+* NEW_AI_CAPABILITY
+* NEW_AUTOMATION
+* EVENT_ANNOUNCEMENT
+* NO_MATERIAL_CHANGE
+
+Allow future extension.
+
+## SEMANTIC ANALYSIS
+
+Use deterministic comparison before LLM analysis.
+
+For semantic comparison:
+
+* chunk content
+* compare relevant sections
+* identify changed claims
+* identify newly introduced technologies
+* identify newly introduced capabilities
+
+Do not send entire documents blindly to an LLM.
+
+## DEDUPLICATION
+
+Detect:
+
+* same article across URLs
+* syndicated content
+* repeated SAP announcements
+* same capability described on multiple SAP pages
+
+Create canonical findings while retaining all source evidence.
+
+## CONFIDENCE
+
+Every classification must have:
+
+* classification
+* confidence
+* reason
+* evidence reference
+* model/algorithm version
+
+## TESTS
+
+Create fixtures for:
+
+1. completely new page
+2. minor page edit
+3. major capability update
+4. duplicated article
+5. conflicting descriptions
+
+Do not build the full opportunity engine yet.
+--------------------------------------------------------------------------------------------------
+CHUNK 07 — Automation Intelligence Agent
+--------------------------------------------------
+Implement **Phase 7 — Automation Intelligence Agent**.
+
+This is the first major reasoning agent.
+
+## OBJECTIVE
+
+Convert meaningful SAP changes into structured Automation Cards.
+
+The agent must answer:
+
+1. What is new?
+2. What business problem does it solve?
+3. Which business area does it affect?
+4. Which industry does it affect?
+5. What was the previous/manual process?
+6. What is now automated?
+7. What is the automation approach?
+8. What technologies are involved?
+9. What SAP products/capabilities are involved?
+10. How does the solution work?
+11. What human interaction remains?
+12. What evidence supports the claim?
+
+## TAXONOMY
+
+Support at minimum:
+
+### Business domains
+
+* FI
+* CO
+* SD
+* MM
+* PP
+* QM
+* PM/EAM
+* EWM
+* TM
+* PS
+* PLM
+* MDG
+* GRC
+* Treasury
+* Real Estate
+* Service
+* CRM/CX
+* HCM
+* Procurement
+* Supply Chain
+* Manufacturing
+
+### Industries
+
+Use the supplied industry taxonomy including:
+
+* aerospace & defense
+* automotive
+* banking
+* consumer products
+* engineering/construction
+* healthcare
+* high tech
+* industrial manufacturing
+* insurance
+* life sciences
+* media
+* mining
+* oil/gas/energy
+* professional services
+* public sector
+* retail
+* sports/entertainment
+* telecommunications
+* utilities
+* wholesale distribution
+
+### Automation types
+
+* workflow
+* RPA
+* document processing
+* API integration
+* event-driven automation
+* AI-assisted automation
+* agentic automation
+* predictive automation
+* analytics-driven automation
+* custom application automation
+
+## AGENT OUTPUT
+
+Create a typed AutomationCard.
+
+It must include:
+
+* finding_id
+* title
+* problem
+* process_before
+* process_after
+* business_domain
+* industry
+* SAP_products
+* automation_type
+* trigger
+* inputs
+* processing
+* decision_logic
+* outputs
+* human_involvement
+* technologies
+* claimed_benefits
+* inferred_benefits
+* evidence_refs
+* confidence
+* reasoning_summary
+
+## CRITICAL RULE
+
+The agent must never present inference as fact.
+
+Every extracted field should be traceable to evidence where possible.
+
+If information is unavailable, explicitly return:
+
+UNKNOWN / NOT_STATED
+
+rather than inventing it.
+
+## AGENT VERSIONING
+
+Persist:
+
+* agent version
+* prompt version
+* model
+* execution ID
+
+## TESTING
+
+Create representative fixtures and test extraction validation.
+
+Do not yet implement architecture reconstruction.
+------------------------------------------------------------------------------------------------
+CHUNK 08 — Architecture Intelligence Agent
+--------------------------------------------
+Implement **Phase 8 — Architecture Intelligence Agent**.
+
+## OBJECTIVE
+
+For each high-value Automation Card, reconstruct the technical architecture using only supported evidence plus clearly marked inference.
+
+## ARCHITECTURE MODEL
+
+Represent:
+
+Trigger
+→ Data Source
+→ Processing
+→ AI / Rules
+→ Decision
+→ Workflow
+→ API / Event
+→ SAP Target
+→ External Target
+→ Monitoring
+
+## TECHNOLOGY TAXONOMY
+
+Support:
+
+* S/4HANA
+* SAP BTP
+* Integration Suite
+* API Management
+* Event Mesh
+* Process Automation
+* SAP Build
+* Work Zone
+* ABAP
+* CAP
+* Business Application Studio
+* Data Cloud
+* Datasphere
+* HANA
+* AI services
+* Joule
+* Cloud ALM
+* APIs
+* Events
+* migration technologies
+
+Do not assume that a technology is used simply because it is commonly associated with a capability.
+
+## ARCHITECTURE NODE TYPES
+
+Support:
+
+* trigger
+* user
+* application
+* SAP_product
+* API
+* event
+* workflow
+* AI_model
+* rule_engine
+* database
+* document
+* external_system
+* integration
+* monitoring
+* approval
+* human_review
+
+## EDGE TYPES
+
+Support relationships such as:
+
+* triggers
+* reads_from
+* writes_to
+* calls
+* publishes
+* subscribes
+* transforms
+* evaluates
+* routes_to
+* approves
+* monitors
+
+## CONFIDENCE
+
+Every architecture component must be marked:
+
+CONFIRMED
+INFERRED
+UNKNOWN
+
+## OUTPUT
+
+Generate:
+
+1. architecture graph
+2. textual architecture explanation
+3. confirmed components
+4. inferred components
+5. unknown components
+6. assumptions
+7. evidence references
+8. architecture risks/questions
+
+Prepare the model so a UI can later render a diagram.
+
+Do not generate production implementation code from the architecture.
+
+## TESTING
+
+Use fixture documents and verify that the agent does not hallucinate unsupported SAP technologies.
+
+---------------------------------------------------------------------------------------------------
+CHUNK 09 — Opportunity engine + scoring
+------------------------------------------
+Implement **Phase 9 — Automation Opportunity Intelligence**.
+
+## OBJECTIVE
+
+Convert Automation Cards into actionable opportunities.
+
+The system must answer:
+
+> Should we build something because of this finding?
+
+## OPPORTUNITY CLASSES
+
+Classify each candidate as one of:
+
+1. Adopt standard SAP capability
+2. Configure SAP capability
+3. Extend SAP clean-core
+4. Build BTP automation
+5. Build integration accelerator
+6. Build AI/agentic solution
+7. Build industry-specific product
+8. Monitor only
+
+## VALIDATION QUESTIONS
+
+Evaluate:
+
+* Is this already standard SAP?
+* Is it configurable?
+* Does it require extension?
+* Is there an API/event?
+* Is BTP appropriate?
+* Is there a clean-core path?
+* Is it reusable?
+* Is the capability release dependent?
+* Are there licensing considerations?
+* Is there evidence of customer demand?
+* What manual work can be removed?
+* What customer pain is addressed?
+
+## SCORING
+
+Implement the master-design scoring framework:
+
+Business Value — 20%
+Automation Potential — 15%
+Technical Feasibility — 15%
+Reusability — 15%
+Demand — 10%
+Differentiation — 10%
+Clean-Core Relevance — 10%
+Complexity Penalty — up to -15%
+
+Store:
+
+* individual metric scores
+* weights
+* rationale
+* final score
+* score version
+* reviewer override
+* override reason
+
+## IMPORTANT
+
+The scoring model is decision support, not truth.
+
+Never say:
+
+“This is definitely a $X opportunity”
+
+unless supported by evidence.
+
+Use language such as:
+
+“Potential opportunity based on…”
+
+## OUTPUT
+
+Create an Opportunity object containing:
+
+* automation_id
+* opportunity_class
+* problem
+* proposed_solution
+* target_customer
+* target_industry
+* reuse_potential
+* technical_path
+* dependencies
+* risks
+* score
+* rationale
+* recommended_action
+* confidence
+* evidence
+
+Implement tests for scoring and reviewer overrides.
+
+------------------------------------------------------------------------------------------------
+CHUNK 10 — Knowledge graph + semantic intelligence
+-----------------------------------------------------
+Implement **Phase 10 — AutomataIQ Knowledge Intelligence Layer**.
+
+## OBJECTIVE
+
+Create the institutional memory of the platform.
+
+AutomataIQ should not treat every weekly report as an isolated event.
+
+It must remember relationships between:
+
+* sources
+* products
+* capabilities
+* findings
+* automation patterns
+* business processes
+* industries
+* technologies
+* APIs
+* events
+* architecture components
+* opportunities
+
+## KNOWLEDGE MODEL
+
+Create canonical entities and relationships.
+
+Example:
+
+SAP Product
+→ provides Capability
+→ enables Automation
+→ solves Business Process Problem
+→ applies to Industry
+→ uses Technology
+→ integrates through API/Event
+→ creates Opportunity
+
+## TEMPORAL INTELLIGENCE
+
+Support questions such as:
+
+* What changed in the last 30 days?
+* What automation capabilities appeared in the last 6 months?
+* Which technologies are increasing across findings?
+* Which SAP domains have the most automation activity?
+* Which opportunities recur across industries?
+* Which capabilities replaced older approaches?
+
+## ENTITY RESOLUTION
+
+Handle:
+
+* aliases
+* renamed products
+* duplicate technologies
+* multiple URLs for the same capability
+* industry naming differences
+
+## SEARCH
+
+Provide:
+
+* keyword search
+* semantic search
+* filters
+* domain filtering
+* industry filtering
+* technology filtering
+* time filtering
+* confidence filtering
+
+## GRAPH
+
+Use the chosen graph representation or database approach.
+
+Do not create an unnecessary separate graph database if the architecture can meet requirements with PostgreSQL + appropriate extensions, but preserve a clean graph abstraction.
+
+## TESTS
+
+Test entity resolution, relationship creation, duplicate handling and temporal queries.
+---------------------------------------------------------------------------------------------------------
+CHUNK 11 — Web application / intelligence workspace
+------------------------------------------------------
+Implement **Phase 11 — AutomataIQ Intelligence Workspace**.
+
+## OBJECTIVE
+
+Build the enterprise web application described in the master design.
+
+The application is not a generic dashboard.
+
+It is an intelligence workspace for SAP architects and automation leaders.
+
+## NAVIGATION
+
+Implement:
+
+### Home
+
+* Weekly Pulse
+* KPIs
+* top changes
+* top opportunities
+* source health
+
+### Discovery
+
+* Sources
+* Crawl Runs
+* Changes
+* Errors
+
+### Intelligence
+
+* Automation Findings
+* Automation Detail
+* Architecture
+
+### Opportunities
+
+* Opportunity Radar
+* Backlog
+* Opportunity Detail
+* Validation
+
+### Knowledge
+
+* Products
+* Processes
+* Industries
+* Technologies
+* APIs
+* Relationships
+
+### Reports
+
+* Saturday Reports
+* Report Detail
+* Export
+
+### Governance
+
+* Review Queue
+* Evidence
+* Audit
+
+### Administration
+
+* Users
+* Sources
+* Schedules
+* Scoring
+* Agents
+* Models
+
+## AUTOMATION DETAIL PAGE
+
+A user must be able to see:
+
+* what changed
+* why it matters
+* business process
+* SAP domain
+* industry
+* automation type
+* technologies
+* architecture
+* evidence
+* confidence
+* opportunity score
+* recommended action
+
+## EVIDENCE UX
+
+Clearly distinguish:
+
+CONFIRMED
+CORROBORATED
+INFERRED
+SPECULATIVE
+
+A user must be able to trace a statement back to its source.
+
+## ARCHITECTURE UX
+
+Provide an interactive architecture visualization based on the architecture graph.
+
+## OPPORTUNITY UX
+
+Allow:
+
+* filtering
+* sorting
+* scoring inspection
+* reviewer override
+* assignment
+* status changes
+* validation
+
+Do not use fake hard-coded data.
+
+Use actual APIs/database data.
+-------------------------------------------------------------------------------------------------------------
+CHUNK 12 — Saturday reporting engine
+------------------------------------------
+Implement **Phase 12 — Saturday Intelligence Reporting Engine**.
+
+## OBJECTIVE
+
+Generate the recurring six-day SAP Automation Intelligence report.
+
+The report is one of the core products of AutomataIQ.
+
+## REPORT STRUCTURE
+
+### 1. Executive Summary
+
+Include:
+
+* reporting period
+* sources scanned
+* source health
+* meaningful changes
+* new automation patterns
+* top opportunities
+* important industry trends
+* technology trends
+* clean-core opportunities
+* items requiring review
+
+### 2. Automation Findings
+
+For each significant finding include:
+
+* ID
+* title
+* first detected
+* last updated
+* business domain
+* industry
+* SAP products
+* automation type
+* business problem
+* before process
+* after process
+* automation approach
+* technologies
+* architecture
+* human involvement
+* benefits
+* evidence
+* confidence
+
+### 3. Opportunity Radar
+
+Show:
+
+* opportunity
+* score
+* opportunity class
+* business value
+* feasibility
+* reuse
+* recommended action
+
+### 4. Technology Trends
+
+Show emerging:
+
+* SAP technologies
+* AI capabilities
+* integration approaches
+* automation patterns
+* architecture patterns
+
+### 5. Domain/Industry Trends
+
+Show activity across:
+
+* FI
+* MM
+* SD
+* manufacturing
+* supply chain
+* CRM
+* retail
+* life sciences
+* media
+* other covered industries
+
+### 6. Appendix
+
+Include:
+
+* all findings
+* duplicates
+* rejected findings
+* source changes
+* evidence index
+* scoring methodology
+* agent/model versions
+* system health
+
+## OUTPUT FORMATS
+
+Generate:
+
+* PDF
+* HTML
+* structured JSON
+
+Design the reporting service so email/notification integrations can be added later.
+
+## QUALITY
+
+Never publish a finding without traceable evidence.
+
+Never silently omit a high-confidence finding because report formatting failed.
+
+Report generation must be retryable and idempotent.
+
+Add tests for report generation.
+----------------------------------------------------------------------------------------
+CHUNK 13 — Six-day orchestration + Saturday automation
+----------------------------------------------------------
+Implement **Phase 13 — End-to-End Intelligence Orchestration**.
+
+Now connect the previously implemented subsystems.
+
+## TARGET PIPELINE
+
+Scheduler
+→ Source Acquisition
+→ Source Version
+→ Change Detection
+→ Relevance
+→ Deduplication
+→ Automation Agent
+→ Architecture Agent
+→ Evidence
+→ Opportunity Engine
+→ Scoring
+→ Knowledge Graph
+→ Report Aggregation
+→ Saturday Report
+→ Notification
+
+## REQUIREMENTS
+
+Create a durable workflow/orchestration mechanism.
+
+Every workflow execution must have:
+
+* workflow ID
+* correlation ID
+* tenant
+* reporting period
+* start/end
+* status
+* step statuses
+* errors
+* retries
+
+## IDEMPOTENCY
+
+If the same source is processed twice:
+
+* do not duplicate findings
+* do not duplicate evidence
+* do not duplicate opportunities
+* do not duplicate report items
+
+## FAILURE HANDLING
+
+If one agent fails:
+
+* retry where safe
+* record failure
+* continue independent processing
+* route unresolved failures for review
+* do not corrupt downstream knowledge
+
+## SATURDAY
+
+At the configured reporting boundary:
+
+1. close the reporting period
+2. aggregate meaningful findings
+3. rank opportunities
+4. generate report
+5. persist report
+6. validate report completeness
+7. publish report
+8. notify configured recipients
+9. open next reporting period
+
+The schedule must be configurable.
+
+Do not hard-code assumptions about the user's timezone.
+
+## END-TO-END TEST
+
+Create a deterministic test using fixtures that simulates:
+
+source change
+→ finding
+→ automation
+→ architecture
+→ opportunity
+→ score
+→ report
+
+The complete pipeline must execute successfully.
+
+---------------------------------------------------------------------------------------------------
+CHUNK 14 — Evaluation / quality system
+--------------------------------------------------
+Implement **Phase 14 — AI Quality & Evaluation Framework**.
+
+This is critical because AutomataIQ's value depends on the quality of its intelligence.
+
+## OBJECTIVE
+
+Create a repeatable evaluation system for:
+
+* change detection
+* relevance classification
+* deduplication
+* automation extraction
+* architecture extraction
+* opportunity classification
+* scoring
+* evidence quality
+
+## GOLDEN DATASET
+
+Create a fixture structure that supports manually validated examples.
+
+Each example should contain:
+
+* source content
+* expected change
+* expected automation card
+* expected architecture
+* expected opportunity
+* expected confidence
+* expected evidence
+
+## METRICS
+
+Track:
+
+* precision
+* recall
+* F1 where appropriate
+* duplicate rate
+* hallucination rate
+* evidence coverage
+* human acceptance rate
+* reviewer correction rate
+
+## REGRESSION
+
+Every prompt/model/agent change should be capable of being evaluated against the golden dataset.
+
+## MODEL REGISTRY
+
+Record:
+
+* provider
+* model
+* version
+* prompt version
+* date
+* evaluation results
+
+## QUALITY GATES
+
+Do not allow a new production agent version to become the default if it causes unacceptable regression in critical metrics.
+
+Create documentation explaining how to run evaluations.
+
+Do not optimize only for model output quality; optimize for evidence-backed usefulness.
+--------------------------------------------------------------------------------------------
+CHUNK 15 — Production hardening
+----------------------------------------------------
+Implement **Phase 15 — Production Hardening**.
+
+AutomataIQ is now an enterprise platform. Perform a production-readiness review.
+
+## SECURITY
+
+Review and harden:
+
+* authentication
+* authorization
+* tenant isolation
+* secrets
+* API security
+* input validation
+* SSRF risks in source fetching
+* malicious source content
+* prompt injection from crawled content
+* file upload risks if applicable
+* logging of sensitive information
+
+## IMPORTANT AI SECURITY
+
+Treat crawled webpages and documents as untrusted input.
+
+Never allow source content to override system instructions.
+
+Clearly separate:
+
+SYSTEM INSTRUCTIONS
+from
+SOURCE CONTENT
+from
+USER INSTRUCTIONS
+
+Add defenses against prompt injection.
+
+## RELIABILITY
+
+Review:
+
+* retries
+* queues
+* dead-letter handling
+* idempotency
+* database transactions
+* workflow recovery
+* report recovery
+
+## OBSERVABILITY
+
+Implement dashboards/metrics for:
+
+* crawl success rate
+* crawl latency
+* source failures
+* agent success rate
+* agent latency
+* token/cost consumption
+* finding volume
+* report generation
+* queue depth
+* database health
+
+## PERFORMANCE
+
+Identify:
+
+* expensive queries
+* unnecessary LLM calls
+* duplicate embeddings
+* redundant crawling
+* excessive context windows
+
+Introduce caching where appropriate.
+
+## DISASTER RECOVERY
+
+Document:
+
+* backup
+* restore
+* database recovery
+* object storage recovery
+* replay of source ingestion
+* replay of failed workflows
+
+## FINAL RESULT
+
+Produce a production-readiness checklist and fix high/critical issues found during the review.
+------------------------------------------------------------------
+CHUNK 16 — Final autonomous product review
+---------------------------------------------
+Perform a complete **AutomataIQ Enterprise Architecture and Product Readiness Review**.
+
+Do not immediately change code.
+
+First inspect the entire implementation against the master design.
+
+## REVIEW AREAS
+
+### Product completeness
+
+Verify all 10 capabilities exist.
+
+### PRD
+
+Verify that implemented functionality corresponds to the product requirements.
+
+### TRD
+
+Verify that actual architecture matches the technical design.
+
+### App Flow
+
+Verify that all major journeys work.
+
+### UI/UX
+
+Verify that the application is usable by SAP architects and automation leaders.
+
+### Database
+
+Verify:
+
+* relationships
+* indexes
+* tenant isolation
+* provenance
+* auditability
+
+### Agents
+
+Verify every agent has:
+
+* typed input
+* typed output
+* versioning
+* evidence
+* confidence
+* error handling
+* observability
+
+### Source intelligence
+
+Verify:
+
+* source registry
+* crawling
+* source versioning
+* change detection
+* deduplication
+* retries
+* health monitoring
+
+### Intelligence
+
+Verify:
+
+* automation extraction
+* architecture reconstruction
+* opportunity validation
+* scoring
+* knowledge graph/search
+
+### Reporting
+
+Verify the six-day reporting workflow and Saturday report.
+
+### Security
+
+Pay special attention to:
+
+* prompt injection
+* SSRF
+* untrusted source content
+* tenant isolation
+* authorization
+* secrets
+
+### Quality
+
+Run:
+
+* unit tests
+* integration tests
+* end-to-end tests
+* type checking
+* linting
+* build
+* evaluation suite
+
+## IMPORTANT
+
+Identify gaps instead of hiding them.
+
+Classify every finding:
+
+CRITICAL
+HIGH
+MEDIUM
+LOW
+
+Then produce:
+
+1. Architecture assessment
+2. Product completeness score
+3. Security assessment
+4. AI quality assessment
+5. Reliability assessment
+6. Performance assessment
+7. Missing functionality
+8. Technical debt
+9. Recommended fixes in priority order
+
+Only after producing the assessment, implement the CRITICAL and HIGH fixes.
+
+Then rerun the complete validation suite.
+
+Finish by producing:
+
+**AutomataIQ Production Readiness Report**
+------------------------------------------------------------------------------------
+The order I recommend
+
+Do not skip around. Use this sequence:
+00  Master Constitution
+ ↓
+01  Repository + Architecture
+ ↓
+02  Database
+ ↓
+03  Identity + RBAC
+ ↓
+04  Source Registry
+ ↓
+05  Six-Day Crawler
+ ↓
+06  Change Detection
+ ↓
+07  Automation Agent
+ ↓
+08  Architecture Agent
+ ↓
+09  Opportunity + Scoring
+ ↓
+10  Knowledge Intelligence
+ ↓
+11  Web Workspace
+ ↓
+12  Saturday Reporting
+ ↓
+13  End-to-End Orchestration
+ ↓
+14  AI Evaluation
+ ↓
+15  Production Hardening
+ ↓
+16  Final Enterprise Review
+
+I would not tell Claude Code:
+
+“Build AutomataIQ.”
+
+Instead, every prompt establishes a controlled gate.
+
+For example:
+
+Chunk 05 must prove that crawling works before Chunk 06.
+
+Chunk 07 must produce evidence-backed Automation Cards before Chunk 08.
+
+Chunk 08 must produce architecture objects before Chunk 09 scores opportunities.
+
+Chunk 09 must produce opportunities before Chunk 10 builds the knowledge graph.
+
+Chunk 13 only connects everything after the individual components have been tested.
+
+That sequencing will dramatically reduce the chance of Claude Code producing a visually impressive but architecturally hollow application.
+
+Also, the original Vibe Coding document specifically emphasizes resolving architecture, data, API, UI, workflow and security ambiguity before asking an AI coding agent to build. The prompts above apply that principle throughout the implementation rather than treating it as a one-time planning exercise.

@@ -1,0 +1,79 @@
+Requirement ID,Type,Description,Module,Capability,Phase,Verify,Status
+FR-001,Functional,Source registry (CRUD tier active status schedule content hash),Discovery Engine,C01,4,Integration,Not Started
+FR-002,Functional,Source-specific acquisition (HTML RSS/API doc sitemap),Discovery Engine,C01,4,Integration,Not Started
+FR-003,Functional,Continuous ingestion with Saturday six-day reporting boundary,Discovery Engine,C01,4 11,Integration,Not Started
+FR-004,Functional,Source tiering by authority (Tier 1–6),Discovery Engine,C01,4,Unit,Not Started
+FR-005,Functional,Provenance capture (URL retrieved_at version hash) on every finding,Discovery Engine,C01,4,Contract,Not Started
+FR-006,Functional,Change gating — skip unchanged content before expensive analysis,Change Detection,C01,5,Integration,Not Started
+FR-007,Functional,Crawler policy compliance (robots.txt terms rate limits auth boundaries),Discovery Engine,C01,4,Security,Not Started
+FR-008,Functional,Versioned snapshots (policy-compliant storage + normalized snapshot),Evidence Engine,C02,5,Integration,Not Started
+FR-009,Functional,Lexical and semantic diff generation between versions,Change Detection,C02,5,Integration,Not Started
+FR-010,Functional,Change classification (7 classes: new enhancement clarification deprecation architecture event no-meaningful),Change Detection,C02,5,Eval,Not Started
+FR-011,Functional,Evidence confidence scoring (authority recency corroboration specificity),Evidence Engine,C02,5,Unit,Not Started
+FR-012,Functional,Canonical finding merge — dedup ≥ 90% for multi-source coverage,Evidence Engine,C02,5,Eval,Not Started
+FR-013,Functional,Fact labeling (confirmed / inferred / speculative) on every promoted fact,Evidence Engine,C02,5,Contract,Not Started
+FR-014,Functional,Evidence trail for every priority finding (source version + locator),Evidence Engine,C02,5,Contract,Not Started
+FR-015,Functional,Automation pattern extraction (process area products trigger inputs decisions workflow human outcome),Automation Intelligence,C03,6,Eval,Not Started
+FR-016,Functional,Automation-type classification (workflow RPA document API event-driven AI-assisted agentic predictive custom),Automation Intelligence,C03,6,Eval,Not Started
+FR-017,Functional,Business problem and pre-automation process capture,Automation Intelligence,C03,6,Contract,Not Started
+FR-018,Functional,Benefits recorded only when stated; inferred benefits flagged explicitly,Automation Intelligence,C03,6,Contract,Not Started
+FR-019,Functional,Taxonomy mapping across FI/CO SD MM PP QM PM EWM TM PS PLM MDG GRC Treasury CRM HCM procurement industries,Automation Intelligence,C03,6,Unit,Not Started
+FR-020,Functional,Canonical automation IDs assigned with temporal lineage,Automation Intelligence,C03,6,Contract,Not Started
+FR-021,Functional,Architectural flow extraction (trigger→data→processing→AI→decision→workflow→API/event→target→monitoring),Architecture Reconstruction,C04,7,Eval,Not Started
+FR-022,Functional,Technology identification (S/4HANA BTP Integration Suite APIs Event Mesh Build Process Automation AI Data Cloud Datasphere HANA Cloud ALM),Architecture Reconstruction,C04,7,Eval,Not Started
+FR-023,Functional,Confirmed vs inferred component separation,Architecture Reconstruction,C04,7,Contract,Not Started
+FR-024,Functional,Logical architecture diagram and text summary generation,Architecture Reconstruction,C04,7,E2E,Not Started
+FR-025,Functional,Integration-pattern identification (sync API async event batch workflow document agent),Architecture Reconstruction,C04,7,Unit,Not Started
+FR-026,Functional,Human-in-the-loop capture (controls approvals exception paths),Architecture Reconstruction,C04,7,Contract,Not Started
+FR-027,Functional,Validation flags (security audit resilience observability data-governance),Architecture Reconstruction,C04,7,Unit,Not Started
+FR-028,Functional,Gap classification (standard configurable extensible partner-provided genuinely missing),Opportunity Engine,C05,8,Eval,Not Started
+FR-029,Functional,Customer process pain and manual effort mapping,Opportunity Engine,C05,8,Contract,Not Started
+FR-030,Functional,ECC-to-S/4 and clean-core implications identified,Opportunity Engine,C05,8,Eval,Not Started
+FR-031,Functional,Build-path classification (standard SAP config extension BTP automation custom app AI agent external integration),Opportunity Engine,C05,8,Unit,Not Started
+FR-032,Functional,Reuse assessment across customers and industries; dependency tracking,Opportunity Engine,C05,8,Integration,Not Started
+FR-033,Functional,Human validation checklist per opportunity,Opportunity Engine,C05,8,Contract,Not Started
+FR-034,Functional,Weighted scoring (7 metrics − complexity penalty) per C06 weights,Scoring Engine,C06,8,Unit,Not Started
+FR-035,Functional,Score vector + rationale per metric stored and exposed,Scoring Engine,C06,8,Contract,Not Started
+FR-036,Functional,Reviewer override with previous/new value + actor + reason; audit trail,Scoring Engine,C06,8,Contract,Not Started
+FR-037,Functional,Deterministic ranking for Saturday report and backlog (stable tie-break),Scoring Engine,C06,8,Unit,Not Started
+FR-038,Functional,Knowledge graph linking (sources findings automations products processes industries technologies APIs events architectures opportunities),Knowledge Graph,C07,9,Integration,Not Started
+FR-039,Functional,Temporal queries (what changed in last 30/90/180 days),Knowledge Graph,C07,9,Integration,Not Started
+FR-040,Functional,Cross-domain queries (e.g. AI automation affecting MM + manufacturing),Knowledge Graph,C07,9,Integration,Not Started
+FR-041,Functional,Evidence and confidence at fact/relationship level,Knowledge Graph,C07,9,Contract,Not Started
+FR-042,Functional,End-to-end lineage queryable (source→extraction→validation→score→report),Knowledge Graph,C07,9,E2E,Not Started
+FR-043,Functional,Semantic search + structured filters (hybrid vector + facets),Search,C07,9,Integration,Not Started
+FR-044,Functional,Related-pattern and reusable-architecture recommendations,Knowledge Graph,C07,9,Integration,Not Started
+FR-045,Functional,Report composition (executive summary meaningful changes automation findings top opportunities),Reporting,C08,11,E2E,Not Started
+FR-046,Functional,Detailed Automation Cards with architecture and evidence,Reporting,C08,11,E2E,Not Started
+FR-047,Functional,"Why it matters" narrative per headline finding,Reporting,C08,11,Eval,Not Started
+FR-048,Functional,Domain industry and technology heat maps,Reporting,C08,11,E2E,Not Started
+FR-049,Functional,ECC-to-S/4 and clean-core opportunity flags in executive section,Reporting,C08,11,Contract,Not Started
+FR-050,Functional,PDF HTML JSON CSV export generation,Reporting,C08,11,Integration,Not Started
+FR-051,Functional,Configurable recipients filters scoring weights and schedule per tenant,Reporting,C08,11,Contract,Not Started
+FR-052,Functional,Workspaces (Dashboard Discovery Automation Architecture Opportunity Evidence Reports Governance Administration),Workspace (UI),C09,10,E2E,Not Started
+FR-053,Functional,RBAC: platform_admin tenant_admin architect analyst reviewer executive read_only,Governance & Ops,C09,2 10,Security,Not Started
+FR-054,Functional,Audit logs + prompt/model versioning + evidence traceability,Governance & Ops,C09,12,Security,Not Started
+FR-055,Functional,Source health agent health retries DLQ cost budgets monitoring,Governance & Ops,C09,12,Ops,Not Started
+FR-056,Functional,Human review routing (low-confidence + high-impact → Review Queue),Governance & Ops,C09,12,Integration,Not Started
+FR-057,Functional,Tenant isolation at every query boundary + least privilege enforcement,Governance & Ops,C09,2 3 12,Security,Not Started
+FR-058,Functional,Alerts and operational runbooks,Governance & Ops,C09,12 14,Ops,Not Started
+FR-059,Functional,Reviewer feedback capture (relevance correctness architecture scoring),Continuous Learning,C10,15,Integration,Not Started
+FR-060,Functional,Quality metrics and benchmark (golden) datasets,Continuous Learning,C10,13,Eval,Not Started
+FR-061,Functional,Taxonomy evolution with versioning and workflow,Continuous Learning,C10,15,Contract,Not Started
+FR-062,Functional,Customer-specific source packs and private knowledge spaces,Continuous Learning,C10,16,Security,Not Started
+FR-063,Functional,Future APIs for automation-opportunity and architecture retrieval,Continuous Learning,C10,16,Contract,Not Started
+FR-064,Functional,Recommendation layer (what to build what to replace reusable accelerator),Continuous Learning,C10,16,Eval,Not Started
+NFR-001,Non-Functional,Auditability — every report finding traceable to evidence,Governance & Ops,NFR,9 11,E2E,Not Started
+NFR-002,Non-Functional,Reliability — Saturday report retries/alerts; never publish incomplete,Reporting,NFR,11,E2E,Not Started
+NFR-003,Non-Functional,Scalability — ingestion and analysis workers scale independently,Platform,NFR,14,Ops,Not Started
+NFR-004,Non-Functional,Security — SSO RBAC tenant isolation encrypted secrets,Platform,NFR,2 13,Security,Not Started
+NFR-005,Non-Functional,Observability — OTel metrics/logs/traces; cost and quality dashboards,Platform,NFR,2,Ops,Not Started
+NFR-006,Non-Functional,Maintainability — typed contracts versioned prompts/models/classifiers,Platform,NFR,6 12,Contract,Not Started
+NFR-007,Non-Functional,Recoverability — idempotent replayable jobs,Platform,NFR,4 5,Unit,Not Started
+NFR-008,Non-Functional,Explainability — score and confidence rationale always available,Scoring Engine,NFR,8,Contract,Not Started
+NFR-009,Non-Functional,Performance — search p95 < 3s graph p95 < 2s report < 30min,Platform,NFR,9 11 14,Performance,Not Started
+NFR-010,Non-Functional,Availability — 99.5% workspace target; ingestion resilient via queues,Platform,NFR,14,Ops,Not Started
+NFR-011,Non-Functional,Compliance — robots.txt site terms licensing content retention,Discovery Engine,NFR,4 14,Security,Not Started
+NFR-012,Non-Functional,Cost control — tiered models caching deterministic gating budgets,Platform,NFR,5 12,Ops,Not Started
+NFR-013,Non-Functional,Model lock-in resistance — LLM gateway is model-agnostic versioned,Platform,NFR,5 12,Contract,Not Started
+NFR-014,Non-Functional,Quality gates — golden-set eval gates enforce PRD metric thresholds,Continuous Learning,NFR,13,Eval,Not Started
