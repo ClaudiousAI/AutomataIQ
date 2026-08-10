@@ -15,7 +15,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 ## 2. Source of Truth
 
 - **Master design:** `SAP_Automation_Intelligence_Master_Design.pdf` (17 pages, 10 capabilities, 6 pre-code documents).
-- **Engineering blueprint:** `docs/01–21` — generated from the master design and current design phases; currently the definitive spec for implementation.
+- **Engineering blueprint:** `docs/01–23` — generated from the master design and current design phases; currently the definitive spec for implementation.
 - **Repo:** `https://github.com/ClaudiousAI/AutomataIQ` (branch `main`).
 
 ## 3. Current State
@@ -28,6 +28,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ Phase 4 (AI Layer specification) **complete** — `docs/21_AI_Layer_Specification.md` defines all 11 agents plus the LLM Gateway by name, purpose, inputs, outputs, prompt template, tools, memory, retry policy, error handling, evaluation criteria, and success criteria.
 - ✅ Phase 5 (lock cost-minimized stack) **complete** — **[ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)** locks an open-source, self-hosted stack: FastAPI · Next.js · PostgreSQL · Qdrant · Neo4j CE · MinIO · Redis · LangGraph · Celery · APScheduler · Docker + Nginx · GitHub Actions · Prometheus/Grafana/Loki · Keycloak · OpenAI (primary) + Gemini (fallback). Supersedes ADR-0008/0009/0011/0012; amends ADR-0004 (pgvector → Qdrant). **Stack is frozen unless a compelling reason is documented in a new ADR.**
 - ✅ Phase 6 (module roadmap) **complete** — **[22_Module_Roadmap](./22_Module_Roadmap.md)** defines **16 buildable modules** (M01–M16), each with Scope, Dependencies, Acceptance criteria, Tests, and Definition of Done. Modules are implemented one at a time in dependency order; all 78 RTM requirements are covered (FR-059…064 deferred to Phase 15–16 extension modules).
+- ✅ Phase 7 (development rules) **complete** — **[23_Development_Rules](./23_Development_Rules.md)** codifies the mandatory pre-coding gate (requirements, dependencies, architecture, impact) and post-coding gate (tests, docs, RTM, project memory), feature/module completion definitions, and enforcement. Checklist templates provided for PR use.
 - ⏳ Next: **Wave 1 — M01 Project Foundation** (monorepo scaffold, CI skeleton, Docker Compose, OTel bootstrap) — the first code module; ready to build.
 
 ## 4. Key Decisions (recorded fully in `docs/17_Architecture_Decision_Records/`)
