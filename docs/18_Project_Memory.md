@@ -27,7 +27,8 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ All 8 open decisions (OD-1…OD-8) **resolved** — initially AWS + EKS + Helm, Temporal, Keycloak, container hosting, Postgres FTS, Bedrock embeddings, OWASP ZAP. Recorded as **ADRs 0008–0013** (0008/0009/0011/0012 now superseded — see below).
 - ✅ Phase 4 (AI Layer specification) **complete** — `docs/21_AI_Layer_Specification.md` defines all 11 agents plus the LLM Gateway by name, purpose, inputs, outputs, prompt template, tools, memory, retry policy, error handling, evaluation criteria, and success criteria.
 - ✅ Phase 5 (lock cost-minimized stack) **complete** — **[ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)** locks an open-source, self-hosted stack: FastAPI · Next.js · PostgreSQL · Qdrant · Neo4j CE · MinIO · Redis · LangGraph · Celery · APScheduler · Docker + Nginx · GitHub Actions · Prometheus/Grafana/Loki · Keycloak · OpenAI (primary) + Gemini (fallback). Supersedes ADR-0008/0009/0011/0012; amends ADR-0004 (pgvector → Qdrant). **Stack is frozen unless a compelling reason is documented in a new ADR.**
-- ⏳ Next: Phase 2 platform foundation — repo scaffolding, Docker Compose dev environment, CI/CD, Keycloak realm — see [15_Project_Roadmap](./15_Project_Roadmap.md).
+- ✅ Phase 6 (module roadmap) **complete** — **[22_Module_Roadmap](./22_Module_Roadmap.md)** defines **16 buildable modules** (M01–M16), each with Scope, Dependencies, Acceptance criteria, Tests, and Definition of Done. Modules are implemented one at a time in dependency order; all 78 RTM requirements are covered (FR-059…064 deferred to Phase 15–16 extension modules).
+- ⏳ Next: **Wave 1 — M01 Project Foundation** (monorepo scaffold, CI skeleton, Docker Compose, OTel bootstrap) — the first code module; ready to build.
 
 ## 4. Key Decisions (recorded fully in `docs/17_Architecture_Decision_Records/`)
 

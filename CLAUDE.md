@@ -46,6 +46,7 @@ If implementation is requested before approval, first direct the user to approve
 | `docs/requirements_traceability_matrix.csv` | Machine-readable RTM (for tooling/reporting) |
 | `docs/18_Project_Memory.md` | Non-obvious context and current state |
 | `docs/19_Definition_of_Done.md` | DoD for all work |
+| `docs/22_Module_Roadmap.md` | 16 buildable modules: scope, deps, acceptance criteria, tests, DoD |
 
 ---
 
