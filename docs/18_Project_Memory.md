@@ -2,7 +2,7 @@
 
 **Product:** SAP Automation Intelligence Engine (SAIE)
 **Document status:** Living — update on every significant decision or context change.
-**Last updated:** 2026-08-10
+**Last updated:** 2026-08-10 (Phase 5 stack lock)
 
 > This is the project's persistent working memory: context that is non-obvious from the code, current state, decisions, and conventions. Keep it current; treat it as the first place to look when resuming work.
 
@@ -24,9 +24,10 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ Phase 1 (engineering documentation) **complete** — `docs/` contains all 19 deliverables.
 - ✅ Phase 2 (operational Requirements Traceability Matrix) **complete** — `docs/16` carries the living RTM with stable unique IDs (`FR-001…FR-064`, `NFR-001…NFR-014`); CSV available at `docs/requirements_traceability_matrix.csv`; `CLAUDE.md` created at project root encoding the requirement-ID reference rule.
 - ✅ Phase 3 (architecture-before-coding approval gate) **complete & approved** — all 12 concerns in `docs/20_Architecture_Review_Pack.md` approved by **Ganesh on 2026-08-10** with no conditions. Implementation may now begin per [15_Project_Roadmap](./15_Project_Roadmap.md).
-- ✅ All 8 open decisions (OD-1…OD-8) **resolved** — AWS + EKS + Helm, Temporal, Keycloak, container hosting, Postgres FTS, Bedrock embeddings, OWASP ZAP. Recorded as **ADRs 0008–0013**.
+- ✅ All 8 open decisions (OD-1…OD-8) **resolved** — initially AWS + EKS + Helm, Temporal, Keycloak, container hosting, Postgres FTS, Bedrock embeddings, OWASP ZAP. Recorded as **ADRs 0008–0013** (0008/0009/0011/0012 now superseded — see below).
 - ✅ Phase 4 (AI Layer specification) **complete** — `docs/21_AI_Layer_Specification.md` defines all 11 agents plus the LLM Gateway by name, purpose, inputs, outputs, prompt template, tools, memory, retry policy, error handling, evaluation criteria, and success criteria.
-- ⏳ Next: Phase 2 platform foundation or further pre-code specs — repo scaffolding, CI/CD, environments — see [15_Project_Roadmap](./15_Project_Roadmap.md).
+- ✅ Phase 5 (lock cost-minimized stack) **complete** — **[ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)** locks an open-source, self-hosted stack: FastAPI · Next.js · PostgreSQL · Qdrant · Neo4j CE · MinIO · Redis · LangGraph · Celery · APScheduler · Docker + Nginx · GitHub Actions · Prometheus/Grafana/Loki · Keycloak · OpenAI (primary) + Gemini (fallback). Supersedes ADR-0008/0009/0011/0012; amends ADR-0004 (pgvector → Qdrant). **Stack is frozen unless a compelling reason is documented in a new ADR.**
+- ⏳ Next: Phase 2 platform foundation — repo scaffolding, Docker Compose dev environment, CI/CD, Keycloak realm — see [15_Project_Roadmap](./15_Project_Roadmap.md).
 
 ## 4. Key Decisions (recorded fully in `docs/17_Architecture_Decision_Records/`)
 
@@ -35,16 +36,17 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 | 0001 | Next.js + FastAPI stack |
 | 0002 | Orchestration framework for agents (typed contracts + artifacts) |
 | 0003 | Model-agnostic LLM gateway (tiered, versioned, budgeted) |
-| 0004 | PostgreSQL + pgvector + Neo4j + S3 + search |
+| 0004 | PostgreSQL + Neo4j + MinIO + search *(amended by 0014: pgvector → Qdrant)* |
 | 0005 | Event-driven, idempotent, replayable jobs |
 | 0006 | Deterministic preprocessing before generative reasoning |
 | 0007 | Evidence-first with confirmed/inferred/speculative labeling |
-| 0008 | AWS + EKS + Helm platform |
-| 0009 | Temporal as orchestration engine |
+| 0008 | ~~AWS + EKS + Helm platform~~ — superseded by 0014 |
+| 0009 | ~~Temporal as orchestration engine~~ — superseded by 0014 (→ LangGraph + Celery) |
 | 0010 | Keycloak as identity provider |
-| 0011 | Next.js hosted as container in cluster |
-| 0012 | Postgres FTS + Bedrock embeddings for search |
+| 0011 | ~~Next.js hosted as container in cluster~~ — superseded by 0014 (→ Docker) |
+| 0012 | ~~Postgres FTS + Bedrock embeddings~~ — superseded by 0014 (→ Qdrant + OpenAI embeddings) |
 | 0013 | OWASP ZAP for DAST |
+| 0014 | **Locked cost-minimized open-source stack** (Accepted — the operative stack) |
 
 ## 5. Conventions & Non-Obvious Facts
 
@@ -70,4 +72,4 @@ Work is done only when it satisfies [19_Definition_of_Done](./19_Definition_of_D
 
 - Saturday report recipient/notification channel details (Phase 11).
 - Customer source-pack & public-API scope refinement (Phase 16).
-- Phase 2 infra details: Temporal self-hosted vs Temporal Cloud, secrets management (AWS Secrets Manager), container registry specifics.
+- Phase 2 infra details (per ADR-0014, all self-hosted): secrets management (Docker secrets / SOPS), Keycloak realm + OIDC client setup, Qdrant HA if prod scale demands it, MinIO bucket policy.

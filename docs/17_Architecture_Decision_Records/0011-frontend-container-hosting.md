@@ -1,7 +1,8 @@
 # ADR-0011 — Frontend Hosting: Container in the Cluster
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0014](./0014-cost-minimized-open-source-stack.md)
 **Date:** 2026-08-10
+**Superseded:** 2026-08-10
 **Related:** [ADR-0001](./0001-nextjs-fastapi-stack.md) · [ADR-0008](./0008-aws-cloud-platform.md) · [11_Frontend_Architecture](../11_Frontend_Architecture.md)
 **Resolves:** OD-7 (Next.js hosting model)
 

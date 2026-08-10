@@ -1,7 +1,8 @@
 # ADR-0012 — Search & Embeddings: Postgres FTS + Bedrock Embeddings
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0014](./0014-cost-minimized-open-source-stack.md)
 **Date:** 2026-08-10
+**Superseded:** 2026-08-10
 **Related:** [ADR-0004](./0004-postgres-pgvector-neo4j.md) · [ADR-0008](./0008-aws-cloud-platform.md) · [07_Database_Design](../07_Database_Design.md)
 **Resolves:** OD-5 (faceted search), OD-6 (default embedding model)
 

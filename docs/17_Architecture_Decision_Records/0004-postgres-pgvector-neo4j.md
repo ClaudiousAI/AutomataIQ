@@ -1,7 +1,8 @@
 # ADR-0004 — PostgreSQL + pgvector + Neo4j Data Stores
 
-**Status:** Accepted
+**Status:** Amended by [ADR-0014](./0014-cost-minimized-open-source-stack.md)
 **Date:** 2026-08-10
+**Amended:** 2026-08-10 (pgvector → Qdrant; PostgreSQL, Neo4j, and S3-compatible/MinIO storage unchanged)
 **Related:** [07_Database_Design](../07_Database_Design.md)
 
 ## Context

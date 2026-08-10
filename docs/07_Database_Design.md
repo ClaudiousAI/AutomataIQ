@@ -11,10 +11,10 @@
 | Store | Technology | Role |
 |---|---|---|
 | Transactional metadata | PostgreSQL | Primary relational store |
-| Vector | pgvector (in Postgres) | Semantic retrieval over findings/evidence |
+| Vector | Qdrant (self-hosted) | Semantic retrieval over findings/evidence |
 | Graph | Neo4j (or graph model) | Relationships between entities |
-| Search | OpenSearch / PostgreSQL FTS | Search + facets |
-| Blobs | S3-compatible object storage | Snapshots, report files, diagrams |
+| Search | PostgreSQL FTS (in Postgres) | Search + facets |
+| Blobs | MinIO (S3-compatible) | Snapshots, report files, diagrams |
 
 ## 2. Entity-Relationship Overview
 
@@ -61,7 +61,7 @@ Indexes: `(change_type, created_at)`, `(version_id)`
 ### findings
 `id` PK · `tenant_id` FK · `canonical_key` (dedup) · `title` · `status` (new|reviewed|merged|rejected) · `first_detected_at` · `last_updated_at` · `confidence` · `fact_label` (confirmed|inferred|speculative)
 → changes, automations
-Indexes: `(canonical_key)`, `(status, confidence)`, `(last_updated_at)`; FTS/vector on `title` + body
+Indexes: `(canonical_key)`, `(status, confidence)`, `(last_updated_at)`; FTS on `title` + body (embeddings in Qdrant)
 
 ### automations
 `id` PK · `finding_id` FK · `automation_id` (canonical, stable) · `domain` (FI/CO, SD, MM, PP, QM, PM/EAM, EWM, TM, PS, PLM, MDG, GRC, Treasury, CRM, HCM, procurement…) · `industry` · `product` (S/4HANA, BTP…) · `automation_type` (workflow|rpa|document|api|event_driven|ai_assisted|agentic|predictive|custom) · `business_process` · `business_area` · `trigger` · `inputs` (JSONB) · `decisions` (JSONB) · `workflow` (JSONB) · `human_involvement` · `outcome` · `business_problem` · `pre_automation_process` · `benefits` (JSONB: stated[] / inferred[]) · `created_at`
@@ -126,7 +126,7 @@ Indexes: `(actor_id, timestamp)`, `(entity_type, entity_id)`
 | Need | Pattern |
 |---|---|
 | "What changed in last 30/90/180 days" | `changes.created_at` / `findings.first_detected_at` window + filter |
-| Faceted search | OpenSearch/PG-FTS on findings + facet fields (domain, industry, product, type) |
-| Semantic search | pgvector embedding over findings/automation cards |
+| Faceted search | PostgreSQL FTS on findings + facet fields (domain, industry, product, type) |
+| Semantic search | Qdrant embedding over findings/automation cards |
 | Cross-domain "AI affecting MM & manufacturing" | Neo4j multi-hop over automation→product→domain→industry |
 | Lineage source→…→report | join path via evidence/findings/automations/report_items |

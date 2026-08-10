@@ -4,6 +4,7 @@
 **Document status:** ✅ **Approved** — 2026-08-10 by Ganesh
 **Created:** 2026-08-10
 **Approved:** 2026-08-10
+**Stack update:** The technology-stack choices recorded here (AWS/Temporal/Bedrock/pgvector hosting) were superseded on 2026-08-10 by **[ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)** (self-hosted open-source stack). The 12 approved concerns and agent/API/data contracts are unchanged; only the concrete technologies changed. For the operative stack, see ADR-0014.
 **Detailed design docs:** `docs/04–13` (full specifications)
 
 > **Purpose:** This document consolidates every architectural decision across the12 concerns listed in the implementation brief into a single review artifact. Once approved, implementation may begin. No code is written against any concern until its section here is signed off.

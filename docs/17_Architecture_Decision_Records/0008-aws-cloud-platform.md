@@ -1,7 +1,8 @@
 # ADR-0008 — Cloud Platform: AWS + EKS + Helm
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0014](./0014-cost-minimized-open-source-stack.md)
 **Date:** 2026-08-10
+**Superseded:** 2026-08-10
 **Related:** [ADR-0001](./0001-nextjs-fastapi-stack.md) · [12_DevOps_Architecture](../12_DevOps_Architecture.md)
 **Resolves:** OD-3 (cloud provider), OD-4 (manifest tooling)
 

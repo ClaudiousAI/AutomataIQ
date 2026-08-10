@@ -11,11 +11,12 @@
 | Service | Runtime | Responsibility |
 |---|---|---|
 | `api` | FastAPI (Python) | Typed REST surface; auth; RBAC; validation |
-| `orchestrator` | Python | Drives multi-agent pipeline via workflow framework |
-| `worker-crawl` | Python async | Acquisition (HTML/RSS/API/sitemap), parse/normalize, hash |
-| `worker-enrich` | Python async | Diff, relevance, dedup, LLM extraction, architecture |
-| `worker-report` | Python async | Saturday aggregation, render, export, notify |
-| `llm-gateway` | Python | Model-agnostic facade, prompts, caching, budgets |
+| `orchestrator` | Python (LangGraph) | Drives multi-agent pipeline; state in Redis |
+| `worker-crawl` | Python (Celery) | Acquisition (HTML/RSS/API/sitemap), parse/normalize, hash |
+| `worker-enrich` | Python (Celery) | Diff, relevance, dedup, LLM extraction, architecture |
+| `worker-report` | Python (Celery) | Saturday aggregation, render, export, notify |
+| `llm-gateway` | Python | Model-agnostic facade (OpenAI/Gemini), prompts, caching, budgets |
+| `scheduler` | APScheduler | Cron-equivalent trigger for crawl/report jobs |
 | `migrate` | Alembic/CLI | Schema migrations, taxonomy seeds |
 
 ## 2. Module Layout (proposed)
@@ -28,7 +29,7 @@ backend/
   crawl/          # connectors per source type + policy (robots/rate/auth)
   llm/            # gateway, adapters, prompt registry, budgets
   storage/        # Postgres (SQLAlchemy), vector, graph, blob, search adapters
-  events/         # schema + producer/consumer helpers (Kafka/Redis)
+  events/         # schema + producer/consumer helpers (Redis Streams)
   jobs/           # orchestration + worker entrypoints (idempotent)
   observability/  # OTel setup, metrics, logging, tracing helpers
   migrations/     # Alembic revisions + seed data

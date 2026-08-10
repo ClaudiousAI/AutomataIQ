@@ -3,7 +3,7 @@
 **Product:** SAP Automation Intelligence Engine (SAIE)
 **Document status:** Baseline — this is the implementation specification for the AI layer
 **Related docs:** [05_AI_Architecture](./05_AI_Architecture.md) · [06_Agent_Architecture](./06_Agent_Architecture.md) · [10_Backend_Architecture](./10_Backend_Architecture.md) · [14_Testing_Strategy](./14_Testing_Strategy.md) · [16_Requirement_Traceability_Matrix](./16_Requirement_Traceability_Matrix.md)
-**ADR refs:** 0003 (LLM gateway), 0005 (idempotent jobs), 0006 (deterministic-first), 0007 (evidence-first), 0009 (Temporal)
+**ADR refs:** 0003 (LLM gateway), 0005 (idempotent jobs), 0006 (deterministic-first), 0007 (evidence-first), 0014 (locked stack: LangGraph + Celery orchestration)
 
 > **Purpose:** define every agent precisely — name, purpose, inputs, outputs, prompt template, tools, memory, retry policy, error handling, evaluation criteria, success criteria — so the AI layer can be implemented directly from this document. Every agent traces to requirement IDs in the RTM.
 
@@ -69,7 +69,7 @@ Every agent implements the same envelope (from [06](./06_Agent_Architecture.md) 
 }
 ```
 
-Artifacts live in object storage (S3) with Postgres metadata. `status: needs_review` inserts a Review-gate pause via Temporal.
+Artifacts live in object storage (MinIO) with Postgres metadata. `status: needs_review` inserts a Review-gate pause via the orchestrator (LangGraph interruption / Celery signal).
 
 ---
 
@@ -94,7 +94,7 @@ Artifacts live in object storage (S3) with Postgres metadata. `status: needs_rev
 - Source-registry read/write; `crawl_runs` writer.
 - **Forbidden:** any LLM call, any deployment action.
 **Memory:** Ephemeral per run + durable `source_versions` (provenance) + `sources` registry state. No long-term model memory.
-**Retry policy (Temporal activity):** max attempts 3, initial interval 30s, backoff ×2, max 10m, per-URL. Idempotent via `run_id` + `source_id + retrieved_at` uniqueness.
+**Retry policy (orchestrated activity):** max attempts 3, initial interval 30s, backoff ×2, max 10m, per-URL. Idempotent via `run_id` + `source_id + retrieved_at` uniqueness.
 **Error handling:**
 - Unavailable source → retry/backoff → after attempts exhausted, mark source `unhealthy`, emit alert (FR-055).
 - Changed page structure → quarantine parser result (`needs_review`), keep last good version.
@@ -448,7 +448,7 @@ Return JSON only per schema {schema}.
 - Entity-resolution index (deterministic exact + embedding nearest-neighbor) — FR-038.
 - Graph upsert (Neo4j) with evidence/confidence on nodes and edges — FR-041.
 - Lineage writer (source→extraction→validation→score→report) — FR-042.
-- Semantic-search + facet index (Postgres FTS + pgvector; ADR-0012) — FR-043.
+- Semantic-search + facet index (Postgres FTS + Qdrant; ADR-0014) — FR-043.
 **Memory:** The Neo4j graph *is* the agent's memory — persistent, queryable, versioned at relationship level (FR-041). No model long-term memory.
 **Retry policy:** max 2 attempts, 15s interval; graph conflicts are deterministic and retried, not model-routed.
 **Error handling:**
@@ -474,7 +474,7 @@ Return JSON only per schema {schema}.
 - Reviewer decisions + feedback from the Review Queue UI (FR-059).
 **Outputs:**
 - `review_queue_entry`: `{ entity_ref, reason, priority, proposed_action, suggested_decision, feedback_schema }`
-- Promoted/rejected decisions that un-block the pipeline (Temporal signal).
+- Promoted/rejected decisions that un-block the pipeline (orchestrator signal / queue event).
 **Prompt template:** `p_review_v1` (T1):
 
 ```
@@ -593,7 +593,7 @@ The gateway is the single choke point for every model call — the component tha
 - `model_response`: `{ validated_json, model, model_version, prompt_version, usage, cost_usd, latency_ms, cache_hit }`
 **Prompt template:** Templates are *content* managed in the prompt registry (versioned `p_*`), never hardcoded in agents. §4 lists the canonical v1 for each agent; the gateway resolves `(task_tier, prompt_version)` → template + model.
 **Tools:**
-- Provider adapters (pluggable): Bedrock (embeddings + Titan/Claude-family), OpenAI, open-source (self-hosted) — behind one interface (NFR-013).
+- Provider adapters (pluggable): OpenAI (chat + embeddings), Gemini (fallback), open-source (self-hosted) — behind one interface (NFR-013).
 - Tier router: task_tier → model (T1/T2/T3), budget-aware (NFR-012).
 - Prompt-response cache + extraction cache (ADR-0006); identical inputs hit cache.
 - JSON Schema validator; invalid → retry → `needs_review`.

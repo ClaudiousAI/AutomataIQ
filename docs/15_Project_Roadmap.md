@@ -29,9 +29,9 @@ The 16-phase enterprise implementation plan from the master design. Phases are s
 ## Phase 3 — Data Foundation
 **Goal:** DB, vector, graph, storage, migrations.
 **Done criteria:**
-- PostgreSQL schema migrated (Alembic); pgvector enabled.
-- Neo4j schema + seed; object storage buckets + retention policies.
-- Queue/stream topics + DLQ provisioned.
+- PostgreSQL schema migrated (Alembic); FTS/trigram indexes enabled.
+- Qdrant collection + Neo4j schema + seed; MinIO buckets + retention policies.
+- Redis Streams topics + DLQ provisioned.
 **Outputs:** [07_Database_Design](./07_Database_Design.md) implemented.
 
 ## Phase 4 — Source Intelligence
@@ -80,7 +80,7 @@ The 16-phase enterprise implementation plan from the master design. Phases are s
 **Done criteria:**
 - Neo4j populated with lineage source→…→report.
 - Hybrid search (vector + facets) with SLOs met.
-- Temporal + cross-domain queries pass.
+- Time-window (30/90/180-day) + cross-domain queries pass.
 **Outputs:** C07 complete.
 
 ## Phase 10 — Workspace UX

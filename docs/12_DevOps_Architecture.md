@@ -23,35 +23,36 @@ Promotion `dev → staging → prod` is gated by CI checks + eval quality gates 
 - CD: build image → push registry → deploy per environment; infrastructure as code.
 - Env-specific config via environment/secret injection; no secrets in images or repo.
 
-## 3. Container & Orchestration
+## 3. Container & Orchestration (per [ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md))
 
 - Containers per service ([10_Backend_Architecture](./10_Backend_Architecture.md) §1) built from multi-stage Dockerfiles (slim runtimes).
-- Kubernetes (or managed containers) with namespaces: `app`, `workers`, `data`, `observability`.
-- Autoscaling: workers scale on queue depth; API scales on request/CPU.
+- Docker Compose for local dev and single-node deployment; production on any Docker-capable host behind Nginx (TLS termination).
+- Scaling is vertical or manual horizontal; workers scale by starting additional replicas; no autoscaling (accepted trade-off in ADR-0014).
 - Readiness/liveness probes; graceful shutdown for in-flight jobs (idempotency makes restarts safe).
 
 ## 4. Infrastructure as Code
 
-- Terraform/OpenTofu (or cloud-native IaC) for network, clusters, managed stores (Postgres, object storage, queue, search).
-- Helm (or Kustomize) for application manifests per environment.
-- State remote + locking; environments fully reproducible.
+- `infra/` holds Docker Compose definitions, Nginx config, env overlays, and bootstrap scripts per environment.
+- GitHub Actions builds images, runs tests, and deploys via SSH/docker-compose to each environment.
+- Secrets injected via environment/Docker secrets (SOPS for repo-encrypted secrets); no secrets in images or repo.
 
-## 5. Data Services (managed, prod)
+## 5. Data Services (self-hosted, prod)
 
 | Service | Choice | Notes |
 |---|---|---|
-| PostgreSQL + pgvector | Managed RDS/Cloud SQL (or equiv.) | Backups, PITR, automated failover |
-| Object storage | S3-compatible managed | Versioning + lifecycle retention for snapshots |
-| Queue/stream | Managed Kafka / Redis | Retained topics; DLQ |
-| Search | Managed OpenSearch or PG FTS | Managed shards |
-| Neo4j | Managed or containerized | Graph data; export/backup strategy |
+| PostgreSQL | Docker container | Backups via pg_dump/cron; PITR via WAL archiving |
+| Vector | Qdrant (single node) | Snapshot/backup; manual cluster if prod scale demands |
+| Object storage | MinIO | Versioning + lifecycle retention for snapshots |
+| Cache + queue | Redis | Cache + Redis Streams; DLQ group |
+| Search | PostgreSQL FTS | In-process; no separate store |
+| Neo4j | Neo4j Community Edition | Graph data; export/backup strategy |
 
-Dev uses containerized equivalents for parity.
+All data stores self-hosted; no managed cloud equivalents (see [ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)).
 
 ## 6. Observability Stack
 
 - **OpenTelemetry** SDK/exporters in all services; traces, metrics, logs correlated by `trace_id`.
-- Backend: managed metrics/logs/traces (e.g., Prometheus + Loki + Tempo, or cloud equivalents) + Grafana dashboards.
+- Backends (self-hosted, per [ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)): **Prometheus** (metrics) + **Grafana** (dashboards) + **Loki** (logs); OTel traces flow to Prometheus/Grafana.
 - Dashboards: source health, agent health, queue depth, DLQ, LLM cost, job latency, eval quality ([NFR-5], [NFR-12]).
 - Alerts with runbook links ([FR-C09-7]).
 

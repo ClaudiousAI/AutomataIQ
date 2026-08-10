@@ -1,7 +1,8 @@
 # ADR-0009 — Temporal as the Agent Orchestration Engine
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0014](./0014-cost-minimized-open-source-stack.md)
 **Date:** 2026-08-10
+**Superseded:** 2026-08-10
 **Related:** [ADR-0002](./0002-agent-orchestration-framework.md) · [ADR-0005](./0005-event-driven-idempotent-jobs.md) · [06_Agent_Architecture](../06_Agent_Architecture.md) · [10_Backend_Architecture](../10_Backend_Architecture.md)
 **Resolves:** ADR-0002 deferral, OD-1 (orchestration engine)
 
