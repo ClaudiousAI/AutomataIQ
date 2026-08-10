@@ -15,7 +15,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 ## 2. Source of Truth
 
 - **Master design:** `SAP_Automation_Intelligence_Master_Design.pdf` (17 pages, 10 capabilities, 6 pre-code documents).
-- **Engineering blueprint:** `docs/01–19` — generated from the master design and currently the definitive spec for implementation.
+- **Engineering blueprint:** `docs/01–21` — generated from the master design and current design phases; currently the definitive spec for implementation.
 - **Repo:** `https://github.com/ClaudiousAI/AutomataIQ` (branch `main`).
 
 ## 3. Current State
@@ -25,7 +25,8 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ Phase 2 (operational Requirements Traceability Matrix) **complete** — `docs/16` carries the living RTM with stable unique IDs (`FR-001…FR-064`, `NFR-001…NFR-014`); CSV available at `docs/requirements_traceability_matrix.csv`; `CLAUDE.md` created at project root encoding the requirement-ID reference rule.
 - ✅ Phase 3 (architecture-before-coding approval gate) **complete & approved** — all 12 concerns in `docs/20_Architecture_Review_Pack.md` approved by **Ganesh on 2026-08-10** with no conditions. Implementation may now begin per [15_Project_Roadmap](./15_Project_Roadmap.md).
 - ✅ All 8 open decisions (OD-1…OD-8) **resolved** — AWS + EKS + Helm, Temporal, Keycloak, container hosting, Postgres FTS, Bedrock embeddings, OWASP ZAP. Recorded as **ADRs 0008–0013**.
-- ⏳ Next: Phase 2 platform foundation — repo scaffolding, CI/CD, environments — see [15_Project_Roadmap](./15_Project_Roadmap.md).
+- ✅ Phase 4 (AI Layer specification) **complete** — `docs/21_AI_Layer_Specification.md` defines all 11 agents plus the LLM Gateway by name, purpose, inputs, outputs, prompt template, tools, memory, retry policy, error handling, evaluation criteria, and success criteria.
+- ⏳ Next: Phase 2 platform foundation or further pre-code specs — repo scaffolding, CI/CD, environments — see [15_Project_Roadmap](./15_Project_Roadmap.md).
 
 ## 4. Key Decisions (recorded fully in `docs/17_Architecture_Decision_Records/`)
 
@@ -63,7 +64,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 
 ## 7. Definition of Done Pointer
 
-Work is done only when it satisfies [19_Definition_of_Done](./19_Definition_of_Done.md) — including traceability via [16_Requirement_Traceability_Matrix](./16_Requirement_Traceability_Matrix.md).
+Work is done only when it satisfies [19_Definition_of_Done](./19_Definition_of_Done.md) — including traceability via [16_Requirement_Traceability_Matrix](./16_Requirement_Traceability_Matrix.md). AI-layer implementation must additionally satisfy [21_AI_Layer_Specification](./21_AI_Layer_Specification.md).
 
 ## 8. Open Questions / Future Work
 
