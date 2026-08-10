@@ -13,6 +13,12 @@
 | [0005](./0005-event-driven-idempotent-jobs.md) | Event-driven, idempotent, replayable jobs | Accepted |
 | [0006](./0006-deterministic-preprocessing-first.md) | Deterministic preprocessing before generative reasoning | Accepted |
 | [0007](./0007-evidence-first-fact-labeling.md) | Evidence-first with confirmed/inferred fact labeling | Accepted |
+| [0008](./0008-aws-cloud-platform.md) | Cloud platform: AWS + EKS + Helm | Accepted |
+| [0009](./0009-temporal-orchestration-engine.md) | Temporal as the agent orchestration engine | Accepted |
+| [0010](./0010-keycloak-identity-provider.md) | Keycloak as the identity provider | Accepted |
+| [0011](./0011-frontend-container-hosting.md) | Frontend hosting: container in the cluster | Accepted |
+| [0012](./0012-search-embeddings-postgres-bedrock.md) | Search & embeddings: Postgres FTS + Bedrock embeddings | Accepted |
+| [0013](./0013-dast-owasp-zap.md) | DAST: OWASP ZAP | Accepted |
 
 ## ADR Template
 

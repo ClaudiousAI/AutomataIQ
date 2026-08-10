@@ -24,7 +24,8 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ Phase 1 (engineering documentation) **complete** — `docs/` contains all 19 deliverables.
 - ✅ Phase 2 (operational Requirements Traceability Matrix) **complete** — `docs/16` carries the living RTM with stable unique IDs (`FR-001…FR-064`, `NFR-001…NFR-014`); CSV available at `docs/requirements_traceability_matrix.csv`; `CLAUDE.md` created at project root encoding the requirement-ID reference rule.
 - ✅ Phase 3 (architecture-before-coding approval gate) **complete & approved** — all 12 concerns in `docs/20_Architecture_Review_Pack.md` approved by **Ganesh on 2026-08-10** with no conditions. Implementation may now begin per [15_Project_Roadmap](./15_Project_Roadmap.md).
-- ⏳ Next: Settle open decisions OD-1…OD-8, then Phase 2 platform foundation — repo scaffolding, CI/CD, environments.
+- ✅ All 8 open decisions (OD-1…OD-8) **resolved** — AWS + EKS + Helm, Temporal, Keycloak, container hosting, Postgres FTS, Bedrock embeddings, OWASP ZAP. Recorded as **ADRs 0008–0013**.
+- ⏳ Next: Phase 2 platform foundation — repo scaffolding, CI/CD, environments — see [15_Project_Roadmap](./15_Project_Roadmap.md).
 
 ## 4. Key Decisions (recorded fully in `docs/17_Architecture_Decision_Records/`)
 
@@ -37,6 +38,12 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 | 0005 | Event-driven, idempotent, replayable jobs |
 | 0006 | Deterministic preprocessing before generative reasoning |
 | 0007 | Evidence-first with confirmed/inferred/speculative labeling |
+| 0008 | AWS + EKS + Helm platform |
+| 0009 | Temporal as orchestration engine |
+| 0010 | Keycloak as identity provider |
+| 0011 | Next.js hosted as container in cluster |
+| 0012 | Postgres FTS + Bedrock embeddings for search |
+| 0013 | OWASP ZAP for DAST |
 
 ## 5. Conventions & Non-Obvious Facts
 
@@ -60,7 +67,6 @@ Work is done only when it satisfies [19_Definition_of_Done](./19_Definition_of_D
 
 ## 8. Open Questions / Future Work
 
-- Concrete orchestration engine choice (ADR-0002 deferral).
-- Concrete vector/search vendor (Postgres FTS vs OpenSearch) at Phase 3.
 - Saturday report recipient/notification channel details (Phase 11).
 - Customer source-pack & public-API scope refinement (Phase 16).
+- Phase 2 infra details: Temporal self-hosted vs Temporal Cloud, secrets management (AWS Secrets Manager), container registry specifics.

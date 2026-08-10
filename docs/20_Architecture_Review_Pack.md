@@ -485,18 +485,20 @@ Each stage writes a **durable artifact** before the next reads it. The orchestra
 
 ---
 
-## Open Decisions Requiring Approval Before Phase 2
+## Open Decisions — All Resolved (OD-1…OD-8)
 
-| # | Decision | Status | Phase target | Default |
+**Status: ✅ all 8 resolved by Ganesh on 2026-08-10, recorded as ADRs 0008–0013.**
+
+| # | Decision | Decision | Phase target | ADR |
 |---|---|---|---|---|
-| OD-1 | Concrete orchestration engine | Open | 2 | Workflow framework (ADR-0002 deferred) |
-| OD-2 | Concrete IdP / SSO provider | Open | 2 | Keycloak or cloud-native OIDC |
-| OD-3 | Concrete cloud provider and managed services | Open | 2 | TBD at environment setup |
-| OD-4 | Helm vs Kustomize for K8s manifests | Open | 2 | Helm (conventional) |
-| OD-5 | OpenSearch vs Postgres FTS for faceted search | Open | 3 | Postgres FTS (revisit if SLOs missed) |
-| OD-6 | Embedding model for pgvector | Open | 3 | TBD (open-source, in-DB, provider-hosted) |
-| OD-7 | Next.js hosting model | Open | 2 | Container (self-hosted or cloud) |
-| OD-8 | DAST tool | Open | 14 | TBD |
+| OD-1 | Orchestration engine | **Temporal** | 2 | [0009](./17_Architecture_Decision_Records/0009-temporal-orchestration-engine.md) |
+| OD-2 | Identity / SSO provider | **Keycloak** (cloud-agnostic, on EKS) | 2 | [0010](./17_Architecture_Decision_Records/0010-keycloak-identity-provider.md) |
+| OD-3 | Cloud provider + managed services | **AWS** | 2 | [0008](./17_Architecture_Decision_Records/0008-aws-cloud-platform.md) |
+| OD-4 | K8s manifests | **Helm** | 2 | [0008](./17_Architecture_Decision_Records/0008-aws-cloud-platform.md) |
+| OD-5 | Faceted search | **Postgres FTS** (escape hatch: OpenSearch) | 3 | [0012](./17_Architecture_Decision_Records/0012-search-embeddings-postgres-bedrock.md) |
+| OD-6 | Embedding model for pgvector | **Bedrock-hosted** (Titan / Cohere) | 3 | [0012](./17_Architecture_Decision_Records/0012-search-embeddings-postgres-bedrock.md) |
+| OD-7 | Next.js hosting model | **Container in EKS** | 2 | [0011](./17_Architecture_Decision_Records/0011-frontend-container-hosting.md) |
+| OD-8 | DAST tool | **OWASP ZAP** | 14 | [0013](./17_Architecture_Decision_Records/0013-dast-owasp-zap.md) |
 
 ---
 
