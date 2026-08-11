@@ -22,7 +22,7 @@ DoD is the shared contract for "when is work actually finished." It applies to *
 
 ### 2.2 Code & Quality
 - [ ] Code reviewed; review comments resolved.
-- [ ] Lint + typecheck pass (TS strict, Python type-checked).
+- [ ] Lint + typecheck pass (ESLint for React JS, Python mypy).
 - [ ] Unit tests pass for new/changed logic.
 - [ ] Contract tests pass at changed service boundaries.
 - [ ] No new high-severity findings from security scan (SAST/dependency).

@@ -2,7 +2,7 @@
 
 **Product:** SAP Automation Intelligence Engine (SAIE)
 **Document status:** Living — update on every significant decision or context change.
-**Last updated:** 2026-08-10 (Phase 5 stack lock)
+**Last updated:** 2026-08-11 (Frontend stack finalized — ADR-0015)
 
 > This is the project's persistent working memory: context that is non-obvious from the code, current state, decisions, and conventions. Keep it current; treat it as the first place to look when resuming work.
 
@@ -26,7 +26,8 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ Phase 3 (architecture-before-coding approval gate) **complete & approved** — all 12 concerns in `docs/20_Architecture_Review_Pack.md` approved by **Ganesh on 2026-08-10** with no conditions. Implementation may now begin per [15_Project_Roadmap](./15_Project_Roadmap.md).
 - ✅ All 8 open decisions (OD-1…OD-8) **resolved** — initially AWS + EKS + Helm, Temporal, Keycloak, container hosting, Postgres FTS, Bedrock embeddings, OWASP ZAP. Recorded as **ADRs 0008–0013** (0008/0009/0011/0012 now superseded — see below).
 - ✅ Phase 4 (AI Layer specification) **complete** — `docs/21_AI_Layer_Specification.md` defines all 11 agents plus the LLM Gateway by name, purpose, inputs, outputs, prompt template, tools, memory, retry policy, error handling, evaluation criteria, and success criteria.
-- ✅ Phase 5 (lock cost-minimized stack) **complete** — **[ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)** locks an open-source, self-hosted stack: FastAPI · Next.js · PostgreSQL · Qdrant · Neo4j CE · MinIO · Redis · LangGraph · Celery · APScheduler · Docker + Nginx · GitHub Actions · Prometheus/Grafana/Loki · Keycloak · OpenAI (primary) + Gemini (fallback). Supersedes ADR-0008/0009/0011/0012; amends ADR-0004 (pgvector → Qdrant). **Stack is frozen unless a compelling reason is documented in a new ADR.**
+- ✅ Phase 5 (lock cost-minimized stack) **complete** — **[ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)** locks an open-source, self-hosted stack: FastAPI · React (JavaScript) · PostgreSQL · Qdrant · Neo4j CE · MinIO · Redis · LangGraph · Celery · APScheduler · Docker + Nginx · GitHub Actions · Prometheus/Grafana/Loki · Keycloak · OpenAI (primary) + Gemini (fallback). Supersedes ADR-0008/0009/0011/0012; amends ADR-0004 (pgvector → Qdrant). **Stack is frozen unless a compelling reason is documented in a new ADR.**
+- ✅ Phase 5.1 (frontend stack) **complete** — **[ADR-0015](./17_Architecture_Decision_Records/0015-react-javascript-frontend.md)** locks the frontend as **React + JavaScript (Vite SPA)** served as static assets behind Nginx (no SSR, no Node runtime in production), amending ADR-0001 (Web UI) and ADR-0014 (frontend row). Frontend architecture (`docs/11`) and AI layer (`docs/21`) are now **Finalized**.
 - ✅ Phase 6 (module roadmap) **complete** — **[22_Module_Roadmap](./22_Module_Roadmap.md)** defines **16 buildable modules** (M01–M16), each with Scope, Dependencies, Acceptance criteria, Tests, and Definition of Done. Modules are implemented one at a time in dependency order; all 78 RTM requirements are covered (FR-059…064 deferred to Phase 15–16 extension modules).
 - ✅ Phase 7 (development rules) **complete** — **[23_Development_Rules](./23_Development_Rules.md)** codifies the mandatory pre-coding gate (requirements, dependencies, architecture, impact) and post-coding gate (tests, docs, RTM, project memory), feature/module completion definitions, and enforcement. Checklist templates provided for PR use.
 - ⏳ Next: **Wave 1 — M01 Project Foundation** (monorepo scaffold, CI skeleton, Docker Compose, OTel bootstrap) — the first code module; ready to build.
@@ -35,7 +36,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 
 | ADR | Decision |
 |---|---|
-| 0001 | Next.js + FastAPI stack |
+| 0001 | React (JavaScript) + FastAPI stack |
 | 0002 | Orchestration framework for agents (typed contracts + artifacts) |
 | 0003 | Model-agnostic LLM gateway (tiered, versioned, budgeted) |
 | 0004 | PostgreSQL + Neo4j + MinIO + search *(amended by 0014: pgvector → Qdrant)* |
@@ -49,6 +50,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 | 0012 | ~~Postgres FTS + Bedrock embeddings~~ — superseded by 0014 (→ Qdrant + OpenAI embeddings) |
 | 0013 | OWASP ZAP for DAST |
 | 0014 | **Locked cost-minimized open-source stack** (Accepted — the operative stack) |
+| 0015 | **React (JavaScript) + Vite frontend** (Accepted — amends 0001 Web UI, 0014 frontend row) |
 
 ## 5. Conventions & Non-Obvious Facts
 

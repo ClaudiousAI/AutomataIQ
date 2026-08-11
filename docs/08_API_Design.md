@@ -112,7 +112,7 @@
 // SourceVersionCreated
 { "event": "source.version.created", "version": 1,
   "source_version_id": "...", "source_id": "...", "content_hash": "sha256:...",
-  "retrieved_at": "...", "blob_uri": "s3://...", "tenant_id": "..." }
+  "retrieved_at": "...", "blob_uri": "minio://...", "tenant_id": "..." }
 
 // ChangeClassified
 { "event": "change.classified", "version": 1,

@@ -53,7 +53,7 @@ If implementation is requested before approval, first direct the user to approve
 
 ## Architecture in a Nutshell
 
-- **Stack (locked by [ADR-0014](./docs/17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)):** Next.js + TypeScript (UI) · Python FastAPI (API) · Celery + APScheduler (jobs/scheduler) · LangGraph (agent orchestration) · PostgreSQL (tx + FTS) · Qdrant (vectors) · Neo4j Community (graph) · MinIO (objects) · Redis (cache + streams) · Prometheus/Grafana/Loki (observability) · Docker + Nginx (deployment) · Keycloak (identity) · OpenAI primary / Gemini fallback (LLMs)
+- **Stack (locked by [ADR-0014](./docs/17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)):** React + JavaScript (Vite SPA UI) · Python FastAPI (API) · Celery + APScheduler (jobs/scheduler) · LangGraph (agent orchestration) · PostgreSQL (tx + FTS) · Qdrant (vectors) · Neo4j Community (graph) · MinIO (objects) · Redis (cache + streams) · Prometheus/Grafana/Loki (observability) · Docker + Nginx (deployment) · Keycloak (identity) · OpenAI primary / Gemini fallback (LLMs)
 - **Agents:** Discovery → Evidence → Change → Automation → Architecture → Opportunity → Scoring → Knowledge → Report → Review → Governance (typed contracts + persistent artifacts; agents never invent facts, never deploy, never bypass governance)
 - **Fact model:** every claim is labeled **confirmed / inferred / speculative** with evidence links; low confidence is never auto-promoted
 - **Saturday boundary:** reporting week is the six days since previous Saturday
@@ -74,6 +74,6 @@ If implementation is requested before approval, first direct the user to approve
 
 ## Code Style
 
-- TypeScript: strict mode, ESLint + Prettier, App Router
+- React + JavaScript: ESLint + Prettier (no TypeScript in hand-authored frontend source); Vite build
 - Python: type-checked, Pydantic schemas at service boundaries, async workers
 - IDs: ULID/UUIDv7 for global ordering; human-safe slugs for canonical keys

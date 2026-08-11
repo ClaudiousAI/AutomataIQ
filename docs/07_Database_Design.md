@@ -49,7 +49,7 @@ Indexes: `(tenant_id, active)`, `(url)`
 → source_versions
 
 ### source_versions
-`id` PK · `source_id` FK · `crawl_run_id` FK · `content_hash` · `retrieved_at` · `size_bytes` · `blob_uri` (S3) · `normalized_snapshot` (JSONB)
+`id` PK · `source_id` FK · `crawl_run_id` FK · `content_hash` · `retrieved_at` · `size_bytes` · `blob_uri` (MinIO/S3-compatible URI) · `normalized_snapshot` (JSONB)
 → changes
 Indexes: `(source_id, retrieved_at)`, `(content_hash)`
 

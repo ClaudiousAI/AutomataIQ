@@ -43,31 +43,31 @@
 SAIE is a **layered, event-driven, multi-service** platform. The system has four logical layers:
 
 ```
-Presentation (Next.js + TypeScript)
+Presentation (React + JavaScript — Vite SPA)
        ↕ HTTPS
 API (FastAPI — typed REST)
        ↕ internal events
 Agent Orchestration → LLM Gateway → Workers
        ↕
-Data Layer (Postgres + pgvector + Neo4j + S3 + Queue + Search)
+Data Layer (Postgres + Qdrant + Neo4j CE + MinIO + Redis Streams + PostgreSQL FTS)
 ```
 
 ### Key Choices
 
 | Concern | Decision | Rationale |
 |---|---|---|
-| UI framework | Next.js + TypeScript (App Router) | Mature, typed, SSR + client |
+| UI framework | React + JavaScript (Vite SPA) | Professional fluid UX; single runtime; component-driven |
 | API framework | Python FastAPI + Pydantic | Typed contracts, OpenAPI-generated, Python ecosystem |
 | Worker language | Python async | Shared domain logic with API layer |
 | LLM gateway | Model-agnostic, pluggable adapters | No provider lock-in (NFR-13) |
 | State management | Server-side (Postgres) + minimal client state | Enterprise data, not SPA state |
 
 ### Architecture Decision Record
-- **ADR-0001** — Next.js + FastAPI stack: `docs/17/0001-nextjs-fastapi-stack.md`
+- **ADR-0001** — React (JavaScript) + FastAPI stack: `docs/17/0001-nextjs-fastapi-stack.md`
 
 ### Open Questions
-- Concrete Next.js component library choice (shadcn/ui, Radix, internal) — deferred to Phase 10 UI build.
-- Next.js hosting mode (Vercel, self-hosted Node, container) — deferred to Phase 2 environment setup.
+- Concrete React component library choice (shadcn-style composition, Radix primitives, internal) — resolved; deferred to implementation (M13) with ADR-0015 as the guardrail.
+- React SPA hosting mode is settled: static Vite build served by Nginx in Docker.
 
 ---
 
@@ -408,22 +408,20 @@ Kubernetes (or managed containers) with separate namespaces. Three environments:
 
 ```
 ┌──────────────────────────────────────────────┐
-│  Kubernetes Cluster (or managed containers)  │
+│  Docker Host (single-node or scaled manually)│
 │                                              │
-│  namespace: app                              │
-│    web (Next.js)  ·  api (FastAPI)           │
-│    orchestrator   ·  llm-gateway             │
+│  web (React SPA — static via Nginx)          │
+│  api (FastAPI)                               │
+│  orchestrator (LangGraph)                    │
+│  llm-gateway                                 │
+│  worker-crawl  ·  worker-enrich              │
+│  worker-report                               │
 │                                              │
-│  namespace: workers                          │
-│    worker-crawl  ·  worker-enrich            │
-│    worker-report                             │
+│  Postgres  ·  Qdrant  ·  Neo4j CE            │
+│  MinIO  ·  Redis (cache + streams)           │
+│  Keycloak                                     │
 │                                              │
-│  namespace: data                             │
-│    (managed Postgres, Neo4j, S3, queue,      │
-│     search — not in-cluster for prod)        │
-│                                              │
-│  namespace: observability                    │
-│    metrics · logs · traces (OTel stack)      │
+│  Prometheus · Grafana · Loki (OTel stack)    │
 └──────────────────────────────────────────────┘
 ```
 
@@ -490,16 +488,18 @@ Each stage writes a **durable artifact** before the next reads it. The orchestra
 
 **Status: ✅ all 8 resolved by Ganesh on 2026-08-10, recorded as ADRs 0008–0013.**
 
-| # | Decision | Decision | Phase target | ADR |
+> **Important:** The decisions below reflect the *original* Phase 2 selections (AWS/EKS/Temporal/Bedrock/pgvector). These were **superseded on 2026-08-10 by ADR-0014** (self-hosted open-source stack). For the **operative technology choices**, see [ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md) and [docs/04_System_Architecture.md](./04_System_Architecture.md).
+
+| # | Decision | Original Decision | Phase target | ADR |
 |---|---|---|---|---|
-| OD-1 | Orchestration engine | **Temporal** | 2 | [0009](./17_Architecture_Decision_Records/0009-temporal-orchestration-engine.md) |
-| OD-2 | Identity / SSO provider | **Keycloak** (cloud-agnostic, on EKS) | 2 | [0010](./17_Architecture_Decision_Records/0010-keycloak-identity-provider.md) |
-| OD-3 | Cloud provider + managed services | **AWS** | 2 | [0008](./17_Architecture_Decision_Records/0008-aws-cloud-platform.md) |
-| OD-4 | K8s manifests | **Helm** | 2 | [0008](./17_Architecture_Decision_Records/0008-aws-cloud-platform.md) |
-| OD-5 | Faceted search | **Postgres FTS** (escape hatch: OpenSearch) | 3 | [0012](./17_Architecture_Decision_Records/0012-search-embeddings-postgres-bedrock.md) |
-| OD-6 | Embedding model for pgvector | **Bedrock-hosted** (Titan / Cohere) | 3 | [0012](./17_Architecture_Decision_Records/0012-search-embeddings-postgres-bedrock.md) |
-| OD-7 | Next.js hosting model | **Container in EKS** | 2 | [0011](./17_Architecture_Decision_Records/0011-frontend-container-hosting.md) |
-| OD-8 | DAST tool | **OWASP ZAP** | 14 | [0013](./17_Architecture_Decision_Records/0013-dast-owasp-zap.md) |
+| OD-1 | Orchestration engine | **Temporal** (superseded → LangGraph + Celery) | 2 | [0009](./17_Architecture_Decision_Records/0009-temporal-orchestration-engine.md) |
+| OD-2 | Identity / SSO provider | **Keycloak** (cloud-agnostic, on EKS → self-hosted Docker) | 2 | [0010](./17_Architecture_Decision_Records/0010-keycloak-identity-provider.md) |
+| OD-3 | Cloud provider + managed services | **AWS** (superseded → self-hosted on any Docker host) | 2 | [0008](./17_Architecture_Decision_Records/0008-aws-cloud-platform.md) |
+| OD-4 | K8s manifests | **Helm** (superseded → Docker Compose / GitHub Actions) | 2 | [0008](./17_Architecture_Decision_Records/0008-aws-cloud-platform.md) |
+| OD-5 | Faceted search | **Postgres FTS** (escape hatch: OpenSearch → retained) | 3 | [0012](./17_Architecture_Decision_Records/0012-search-embeddings-postgres-bedrock.md) |
+| OD-6 | Embedding model for pgvector | **Bedrock-hosted** (Titan / Cohere → superseded → OpenAI via Gateway) | 3 | [0012](./17_Architecture_Decision_Records/0012-search-embeddings-postgres-bedrock.md) |
+| OD-7 | Next.js hosting model | **Container in EKS** (superseded → Docker container behind Nginx) | 2 | [0011](./17_Architecture_Decision_Records/0011-frontend-container-hosting.md) |
+| OD-8 | DAST tool | **OWASP ZAP** (retained) | 14 | [0013](./17_Architecture_Decision_Records/0013-dast-owasp-zap.md) |
 
 ---
 

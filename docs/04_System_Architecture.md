@@ -18,7 +18,7 @@ Discover → Verify → Detect Change → Understand Automation → Reconstruct 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │                        Presentation Layer                             │
-│        Next.js + TypeScript — Enterprise Intelligence Workspace        │
+│              React + JavaScript (Vite SPA) — Enterprise Workspace      │
 │  Dashboard · Discovery · Automation · Architecture · Opportunity ·     │
 │  Knowledge · Reports · Governance · Administration                     │
 └───────────────▲───────────────────────────────────────────────────────┘
@@ -51,7 +51,7 @@ Discover → Verify → Detect Change → Understand Automation → Reconstruct 
 
 | Layer | Target technology | Purpose |
 |---|---|---|
-| Web UI | Next.js + TypeScript | Enterprise workspace |
+| Web UI | React + JavaScript (Vite SPA) | Enterprise workspace |
 | API | Python FastAPI | Typed service APIs |
 | Agent orchestration | LangGraph | Graph-based AI agent pipeline |
 | Background jobs | Celery + Redis | Crawl/enrich/report jobs |
@@ -69,7 +69,7 @@ Discover → Verify → Detect Change → Understand Automation → Reconstruct 
 
 ## 4. Container View
 
-- **web** — Next.js app server (SSR + client), reverse-proxied behind Nginx.
+- **web** — React SPA (Vite build), served as static assets behind Nginx (no SSR, no Node runtime in production).
 - **api** — FastAPI service (typed REST), stateless, scales horizontally.
 - **celery-workers** — crawl, parse/normalize, hash/diff, LLM-enrich, report workers ([06_Agent_Architecture](./06_Agent_Architecture.md)).
 - **langgraph-orchestrator** — drives the multi-agent pipeline, state in Redis.
@@ -82,7 +82,7 @@ Discover → Verify → Detect Change → Understand Automation → Reconstruct 
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| ADR-001 | Next.js + FastAPI | Mature, typed, large ecosystem for both layers |
+| ADR-001 | React (JavaScript) + FastAPI | Mature, typed API; React SPA for fluid UX |
 | ADR-002 | Orchestration framework for agents | Controlled, auditable execution vs free-form multi-agent |
 | ADR-003 | Model-agnostic LLM gateway | Avoids provider lock-in (NFR-13) |
 | ADR-004 | Postgres + Neo4j + MinIO (amended: Qdrant for vectors) | Single tx DB; vector store; graph for relationships |

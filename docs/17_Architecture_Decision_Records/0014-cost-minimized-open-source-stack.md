@@ -18,7 +18,7 @@ Lock the following open-source stack. No technology is changed unless a compelli
 
 | Layer | Technology | Rationale |
 |---|---|---|
-| Frontend | **Next.js + TypeScript** (App Router) | Unchanged from ADR-0001; mature, typed, SSR+client. |
+| Frontend | **React (JavaScript)** | Professional, fluid, ultra-smooth UX; single-runtime, no SSR overhead; component-driven with modern hooks; built via Vite. |
 | API | **Python FastAPI** + Pydantic | Unchanged from ADR-0001; typed contracts, OpenAPI. |
 | Background jobs | **Celery** + Redis backend | Mature, Python-native, well-understood, free. Replaces ad-hoc async workers. |
 | Scheduler | **APScheduler** | Lightweight, Python-native, no external dependency. Replaces cron or managed scheduler. |
@@ -84,7 +84,7 @@ Both are routed through the **LLM Gateway** (ADR-0003): no agent calls a provide
 | ADR-0012 | Postgres FTS + Bedrock embeddings | Postgres FTS + Qdrant + OpenAI embeddings |
 | ADR-0004 | pgvector (in-Postgres vectors) | Qdrant (separate vector DB) |
 
-**ADR-0001** (Next.js + FastAPI), **ADR-0002** (typed contracts + artifacts), **ADR-0003** (model-agnostic gateway), **ADR-0005** (idempotent jobs), **ADR-0006** (deterministic-first), **ADR-0007** (evidence-first), **ADR-0010** (Keycloak), **ADR-0013** (ZAP) — all **unchanged and still Accepted**.
+**ADR-0001** (React (JavaScript) + FastAPI; Web UI portion amended by [ADR-0015](./0015-react-javascript-frontend.md)), **ADR-0002** (typed contracts + artifacts), **ADR-0003** (model-agnostic gateway), **ADR-0005** (idempotent jobs), **ADR-0006** (deterministic-first), **ADR-0007** (evidence-first), **ADR-0010** (Keycloak), **ADR-0013** (ZAP) — all **unchanged and still Accepted**.
 
 ## Consequences
 ### Positive

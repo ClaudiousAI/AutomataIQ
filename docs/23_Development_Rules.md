@@ -253,8 +253,8 @@ A module (M01–M16 per [22_Module_Roadmap](./22_Module_Roadmap.md)) is **comple
 | NFR-012 | Cost control (deterministic gating) | §2.3 |
 | NFR-013 | Model lock-in resistance (model-agnostic gateway) | §2.3 |
 | NFR-014 | Quality gates (golden-set eval) | §3.1 |
-| FR-055 | Platform Foundation (if traced to platform module) | §2.2, §5 |
-| FR-056 | CI/CD Pipeline (if traced) | §3.1, §8 |
+| FR-055 | Source health, agent health, retries, DLQ, cost budgets monitoring | §2.2, §5 |
+| FR-056 | Human review routing (low-confidence + high-impact → Review Queue) | §2.3, §3.1, §8 |
 
 ---
 

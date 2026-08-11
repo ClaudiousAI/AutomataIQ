@@ -1,7 +1,7 @@
 # 21 — AI Layer Specification (Phase 4)
 
 **Product:** SAP Automation Intelligence Engine (SAIE)
-**Document status:** Baseline — this is the implementation specification for the AI layer
+**Document status:** Finalized — implementation-ready AI-layer specification
 **Related docs:** [05_AI_Architecture](./05_AI_Architecture.md) · [06_Agent_Architecture](./06_Agent_Architecture.md) · [10_Backend_Architecture](./10_Backend_Architecture.md) · [14_Testing_Strategy](./14_Testing_Strategy.md) · [16_Requirement_Traceability_Matrix](./16_Requirement_Traceability_Matrix.md)
 **ADR refs:** 0003 (LLM gateway), 0005 (idempotent jobs), 0006 (deterministic-first), 0007 (evidence-first), 0014 (locked stack: LangGraph + Celery orchestration)
 
@@ -435,7 +435,7 @@ context, produce entity resolutions and relationships.
   technology/API/event across sources) using exact + semantic matching.
 - Produce typed edges with relation labels, confidence, and the evidence_ref that
   supports each edge. Edges without evidence are invalid.
-- Identify which temporal (30/90/180-day) and cross-domain (e.g. AI automation
+- Identify which time-window (30/90/180-day) and cross-domain (e.g. AI automation
   affecting MM + manufacturing) queries this new data should surface in.
 - Recommend related patterns / reusable architectures.
 
@@ -456,7 +456,7 @@ Return JSON only per schema {schema}.
 - Duplicate merge under canonical finding (post-hoc) → graph edges re-pointed, history preserved.
 - Embedding index drift → re-embed only changed content (ADR-0006), never full rebuild on each run.
 **Evaluation criteria:**
-- Temporal queries return correct 30/90/180-day change windows on fixture data (FR-039).
+- Time-window queries return correct 30/90/180-day change windows on fixture data (FR-039).
 - Cross-domain query correctness (e.g., AI + MM + manufacturing) on golden queries (FR-040).
 - Evidence present on ≥ 95% of graph edges (FR-041).
 - End-to-end lineage walkable for every report finding (FR-042, NFR-001).

@@ -1,8 +1,9 @@
 # 10 — Backend Architecture
 
 **Product:** SAP Automation Intelligence Engine (SAIE)
-**Document status:** Baseline
-**Related docs:** [04_System_Architecture](./04_System_Architecture.md) · [06_Agent_Architecture](./06_Agent_Architecture.md) · [07_Database_Design](./07_Database_Design.md) · [08_API_Design](./08_API_Design.md)
+**Document status:** Finalized — implementation-ready backend architecture
+**Related docs:** [04_System_Architecture](./04_System_Architecture.md) · [06_Agent_Architecture](./06_Agent_Architecture.md) · [07_Database_Design](./07_Database_Design.md) · [08_API_Design](./08_API_Design.md) · [12_DevOps_Architecture](./12_DevOps_Architecture.md) · [21_AI_Layer_Specification](./21_AI_Layer_Specification.md)
+**ADR refs:** 0001 (FastAPI API), 0003 (LLM gateway), 0005 (idempotent jobs), 0006 (deterministic-first), 0007 (evidence-first), 0014 (locked stack: LangGraph + Celery + APScheduler + Redis Streams + Qdrant + MinIO)
 
 ---
 
@@ -39,14 +40,14 @@ backend/
 
 - **Typed contracts everywhere:** Pydantic schemas bound every service boundary; agents use the envelope in [06_Agent_Architecture](./06_Agent_Architecture.md).
 - **Deterministic-first:** parse/normalize/hash/diff/dedup/entity-resolution run as pure functions before any LLM call ([05_AI_Architecture](./05_AI_Architecture.md) §1).
-- **Idempotent, replayable jobs:** every job carries an idempotency key (`run_id`); re-runs produce no duplicates ([NFR-7]).
-- **Queued, decoupled stages:** producers publish; workers consume; DLQ on repeated failure ([FR-C09-4]).
+- **Idempotent, replayable jobs:** every job carries an idempotency key (`run_id`); re-runs produce no duplicates ([NFR-007](./16_Requirement_Traceability_Matrix.md)).
+- **Queued, decoupled stages:** producers publish; workers consume; DLQ on repeated failure ([FR-055](./16_Requirement_Traceability_Matrix.md)).
 - **Human-in-the-loop gates:** low-confidence / high-impact outputs pause the pipeline at the Review gate.
 - **Tenant isolation:** every repository query scoped by `tenant_id`; row-level security as backstop ([13_Security_Architecture](./13_Security_Architecture.md)).
 
 ## 4. Scoring Engine (deterministic)
 
-Composite = Σ(metric_value × weight) − complexity_penalty, clamped to [0,100]; weights per PRD/C06. Stored as a score vector with rationale; reviewer override overwrites value + reason and recomputes composite ([FR-C06-*]). Scores are **recommendations, not facts.**
+Composite = Σ(metric_value × weight) − complexity_penalty, clamped to [0,100]; weights per [FR-034](./16_Requirement_Traceability_Matrix.md). Stored as a score vector with rationale; reviewer override overwrites value + reason and recomputes composite ([FR-034](./16_Requirement_Traceability_Matrix.md)). Scores are **recommendations, not facts.**
 
 ## 5. Deduplication & Canonicalization
 
@@ -60,13 +61,13 @@ Composite = Σ(metric_value × weight) − complexity_penalty, clamped to [0,100
 2. Rank opportunities from stored score vectors.
 3. Compose exec summary + Automation Cards + appendices.
 4. Render PDF/HTML/JSON/CSV; publish to object storage; record `file_uri`.
-5. Notify configured recipients; never publish incomplete ([FR-C08-6], edge case in App Flow).
+5. Notify configured recipients; never publish incomplete ([NFR-002](./16_Requirement_Traceability_Matrix.md), edge case in App Flow).
 
 ## 7. Failure & Observability
 
-- OTel traces per job; metrics: crawl latency/bytes, agent token cost, queue depth, DLQ size, eval quality.
-- Cost budgets per source/agent/tenant with alerting ([NFR-12]).
-- Runbooks attached to alert types ([FR-C09-7]).
+- OTel traces per job; metrics: crawl latency/bytes, agent token cost, queue depth, DLQ size, eval quality ([NFR-005](./16_Requirement_Traceability_Matrix.md)).
+- Cost budgets per source/agent/tenant with alerting ([NFR-012](./16_Requirement_Traceability_Matrix.md)).
+- Runbooks attached to alert types ([FR-055](./16_Requirement_Traceability_Matrix.md)).
 
 ## 8. Testing Surface (see [14_Testing_Strategy](./14_Testing_Strategy.md))
 
@@ -74,3 +75,13 @@ Composite = Σ(metric_value × weight) − complexity_penalty, clamped to [0,100
 - Idempotency tests (re-run equivalence).
 - Tenant-isolation tests (cross-tenant access denied).
 - Golden-set evaluation harness for LLM-dependent stages.
+
+## 9. Definition of Done for This Architecture
+
+This backend architecture is finalized when:
+
+- [x] Backend services, module layout, and key behaviors are specified.
+- [x] Scoring, deduplication, reporting, and observability designs are explicit.
+- [x] Requirement traceability uses current RTM IDs ([16_Requirement_Traceability_Matrix](./16_Requirement_Traceability_Matrix.md)).
+- [x] Stack alignment with ADR-0014 is explicit (LangGraph + Celery + APScheduler + Redis Streams + Qdrant + MinIO).
+- [x] Implementation is blocked from starting until AI, frontend, and backend architecture are all finalized.

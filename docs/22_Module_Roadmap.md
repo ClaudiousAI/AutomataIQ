@@ -110,7 +110,7 @@ Each module lists **Scope · Dependencies · Acceptance criteria · Tests · Def
 
 - **Scope**
   - Monorepo layout: `web/`, `backend/`, `infra/`, `docs/`, `e2e/`.
-  - Python env + lockfiles and linting/type-checking (Ruff/mypy); Next.js + TypeScript scaffold (strict, ESLint + Prettier).
+  - Python env + lockfiles and linting/type-checking (Ruff/mypy); React + JavaScript (Vite) scaffold (ESLint + Prettier).
   - GitHub Actions CI skeleton: lint, typecheck, unit, dependency/SAST scan.
   - `docker compose up` skeleton: `web`, `api`, `nginx` containers responding on `/health`.
   - Config management (pydantic-settings / zod) + env overlays; `.env.example`; SOPS/Docker-secret convention documented (no secrets in repo).
@@ -392,14 +392,14 @@ Each module lists **Scope · Dependencies · Acceptance criteria · Tests · Def
   - Neo4j population: sources → findings → automations → products → processes → industries → technologies → APIs → events → architectures → opportunities (FR-038).
   - Evidence + confidence on nodes and edges (FR-041).
   - End-to-end lineage query: source → extraction → validation → score → report (FR-042, NFR-001).
-  - Temporal queries (last 30/90/180 days) + cross-domain queries (FR-039, FR-040).
+  - Time-window queries (last 30/90/180 days) + cross-domain queries (FR-039, FR-040).
   - Hybrid search: Postgres FTS facets + Qdrant vector (FR-043).
   - Related-pattern + reusable-architecture recommendations (FR-044).
   - **Out of scope:** extraction (M08/M09), scoring (M10).
 - **Dependencies:** M07–M10 outputs, M03 stores, M04 adapters.
 - **Acceptance criteria**
   - Graph populated with lineage; every edge carries evidence + confidence (FR-038, FR-041).
-  - Temporal and cross-domain query examples pass on fixture data (FR-039, FR-040).
+  - Time-window and cross-domain query examples pass on fixture data (FR-039, FR-040).
   - Lineage query returns the full source→report chain (FR-042, NFR-001).
   - Hybrid search returns combined results; facets filter correctly (FR-043).
   - p95: search < 3 s, graph < 2 s on the reference set (NFR-009).
@@ -447,7 +447,7 @@ Each module lists **Scope · Dependencies · Acceptance criteria · Tests · Def
 ### M13 — Workspace / Dashboard (Frontend)
 
 - **Scope**
-  - Next.js App Router app with 9 workspaces: Dashboard, Discovery, Automation, Architecture, Opportunity, Evidence, Reports, Governance, Administration (FR-052).
+  - React + JavaScript (Vite SPA) app with 9 workspaces: Dashboard, Discovery, Automation, Architecture, Opportunity, Evidence, Reports, Governance, Administration (FR-052).
   - Data tables, EvidenceBadge, ScoreBadge, ArchitectureDiagram components ([11_Frontend_Architecture](./11_Frontend_Architecture.md)).
   - Health views (source/agent/queue/cost) (FR-055).
   - Accessibility (keyboard, contrast AA, no color-only meaning) + responsive ([19 §3](./19_Definition_of_Done.md)).
