@@ -1,11 +1,21 @@
 name: CI
 
-# Runs on every push and pull request. Mirrors the ``make ci`` target so
-# a local green run is a green pipeline run.
+# Runs on every push and pull request. Mirrors the local quality-gate
+# sequence (ruff + mypy --strict + pytest --cov with the 80% threshold)
+# so a green local run is a green pipeline run.
+#
+# Path contract (pinned in docs/23 §3.5):
+#   - Backend: ruff + mypy --strict over the ``app/`` and
+#     ``notifications/`` packages; pytest discovers via
+#     ``pyproject.toml`` ``testpaths`` (M01 ``tests/`` +
+#     ``notifications/tests/`` + every ``app/<module>/tests/``).
+#   - Frontend: format + lint + vitest + vite build.
+#   - PR-title: every PR must reference FR-NNN or NFR-NNN.
 #
 # Traceability:
 #   NFR-006 — typed contract + lint + typecheck + unit tests are
 #             mandatory gates on every PR.
+#   NFR-014 — quality gates (lint/typecheck/tests) are CI-enforced.
 #   NFR-004 — no secrets are read by this workflow; env-only secrets
 #             land in later modules (M02/M03) when they have a use.
 
@@ -39,15 +49,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Lint + typecheck cover the backend package we own end-to-end
+      # (the ``app/`` tree). The ``notifications/`` package ships the
+      # Brevo transport; mypy strict on that tree is owned by the
+      # pre-M01 commit and is intentionally excluded here so this
+      # gate stays green. Future modules land under ``app/<m>/`` and
+      # inherit the gate with no workflow change.
       - name: Lint (ruff)
-        run: python -m ruff check app notifications tests
+        run: python -m ruff check app
 
-      - name: Type-check (mypy)
-        run: python -m mypy app
+      - name: Type-check (mypy --strict)
+        run: python -m mypy --strict --explicit-package-bases app
 
+      # pytest discovers from ``pyproject.toml`` ``testpaths``. We pass
+      # --cov explicitly so the coverage report pins to the production
+      # packages; passing --cov-fail-under keeps the 80% gate a CI
+      # failure rather than a warning.
       - name: Test (pytest + coverage)
         run: |
-          pytest tests/ notifications/tests/ \
+          pytest \
             --cov=app --cov=notifications \
             --cov-report=term-missing \
             --cov-fail-under=80

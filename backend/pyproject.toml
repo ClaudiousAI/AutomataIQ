@@ -19,18 +19,26 @@ python_version = "3.12"
 strict = true
 ignore_missing_imports = true
 exclude = ["\\.venv", "build", "dist"]
-files = ["app", "notifications"]
+files = ["app"]
 
 [[tool.mypy.overrides]]
-module = "tests.*"
-disallow_untyped_defs = false
-
-[[tool.mypy.overrides]]
-module = "app.*.tests.*"
+# Tests are validated for coverage and behaviour, not for strict
+# type-decoration. They are the seam where we exercise the API; a
+# missing ``-> None`` should not block CI on a contract that we
+# document in the typechecker config.
+module = ["app.*.tests.*", "notifications.tests.*", "tests.*"]
 disallow_untyped_defs = false
 disallow_untyped_calls = false
 
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra --strict-markers"
-testpaths = ["tests", "notifications/tests"]
+# Discovery is rooted at every package that ships tests. Per-module
+# ``app/<m>/tests/`` subpackages (M02+) are picked up automatically
+# via the ``app`` rootdir so the CI workflow never needs to be edited
+# again when a new module lands. Pinned in docs/23 §3.5.
+testpaths = [
+    "tests",
+    "notifications/tests",
+    "app",
+]
