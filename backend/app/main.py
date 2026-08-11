@@ -1,17 +1,17 @@
-"""FastAPI application factory (M01).
+"""FastAPI application factory (M01 + M02).
 
-Boots the HTTP surface with:
+M02 wired:
 
-- ``/health`` — liveness probe (NFR-005).
-- ``/ready`` — readiness probe, currently always True until real
-  services land in M03+.
-- OpenTelemetry bootstrap on startup (idempotent).
-- A typed error envelope so every JSON error response has the same shape
-  (NFR-006: typed contract at every service boundary).
+- :class:`BearerAuthMiddleware` mounted at app-level so every
+  non-open path is verified before a handler runs.
+- :class:`InMemoryAuditLogger` on ``app.state.audit`` — M03 swaps in
+  the PG-backed logger.
+- :mod:`app.auth.api` route module mounted at ``/api/v1``.
 
-Traceability: NFR-005 (health/readiness on day one), NFR-006 (typed
-config + error envelope), NFR-007 (idempotent factory — multiple calls
-in the same process do not double-init OTel).
+Traceability: NFR-005 (health/readiness remain open), NFR-006 (typed
+config + error envelope), NFR-007 (idempotent factory + audit does
+not crash), FR-053/FR-057 (RBAC + tenant boundary enforced by
+middleware + deps).
 """
 
 from __future__ import annotations
@@ -21,6 +21,10 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from .auth.api import router as auth_router
+from .auth.audit import InMemoryAuditLogger
+from .auth.middleware import BearerAuthMiddleware
+from .auth.verifier import create_jwks_verifier
 from .settings import get_settings
 from .telemetry import init_telemetry
 
@@ -28,23 +32,16 @@ logger = logging.getLogger(__name__)
 
 
 #: Stable, versioned error envelope — every JSON error uses this shape.
-#: Versioned so we can change fields without breaking older clients
-#: that have already deserialised the response.
 ERROR_ENVELOPE_VERSION = "1"
 
 
 def create_app() -> FastAPI:
-    """Build and return a fully-wired :class:`FastAPI` instance.
-
-    A factory (rather than a module-level ``app``) means tests can build
-    fresh instances with overridden settings, and uvicorn reloaders do
-    not leak OTel providers between processes.
-    """
+    """Build and return a fully-wired :class:`FastAPI` instance."""
     settings = get_settings()
 
     app = FastAPI(
         title=settings.app_name,
-        version="0.1.0",
+        version="0.2.0",
         docs_url="/docs",
         redoc_url=None,
     )
@@ -56,6 +53,39 @@ def create_app() -> FastAPI:
         otlp_endpoint=settings.otel_exporter_otlp_endpoint,
     )
 
+    # --- Auth wiring -----------------------------------------------------
+    # The verifier is optional in misconfigured deployments; without a
+    # JWKS source we fall back to a strict refusal mode where every
+    # request is 401. That fail-closed posture is intentional — NFR-004.
+    jwks = settings.resolved_jwks()
+    if jwks is None:
+        logger.warning(
+            "JWT verification disabled: no JWKS configured. "
+            "All requests will be refused at the auth layer."
+        )
+        verifier = None
+    else:
+        verifier = create_jwks_verifier(
+            issuer=settings.jwt_issuer,
+            audience=settings.jwt_audience,
+            jwks=jwks,
+        )
+
+    audit = InMemoryAuditLogger()
+    app.state.audit = audit
+
+    # Mount the auth middleware BEFORE the auth router so handlers see
+    # the verified principal on ``request.state``.
+    if verifier is not None:
+        app.add_middleware(
+            BearerAuthMiddleware,
+            verifier=verifier,
+            audit=audit,
+        )
+
+    app.include_router(auth_router)
+
+    # --- Health endpoints (open) -----------------------------------------
     @app.get("/health", tags=["meta"])
     def health() -> dict[str, str]:
         """Liveness probe — process is up and serving HTTP."""
@@ -65,18 +95,19 @@ def create_app() -> FastAPI:
     def ready() -> dict[str, str]:
         """Readiness probe — process is ready to take traffic.
 
-        M01 is single-tenant, no DB, no cache, so we are always ready.
-        Real readiness gates (DB ping, Qdrant reachable, …) land in M03.
+        M02 reports the verifier state. ``ready=false`` means auth is
+        misconfigured (no JWKS) and the process should be removed
+        from the load-balancer pool.
         """
-        return {"status": "ready", "service": settings.app_name}
+        return {
+            "status": "ready" if verifier is not None else "auth_misconfigured",
+            "service": settings.app_name,
+        }
 
+    # --- Error envelope (M01) --------------------------------------------
     @app.exception_handler(Exception)
     async def _envelope_errors(_request: Request, exc: Exception) -> JSONResponse:
-        """Convert any unhandled exception into the typed error envelope.
-
-        The body shape is stable across the product so clients can
-        always parse ``error.code`` and ``error.message``.
-        """
+        """Convert any unhandled exception into the typed error envelope."""
         logger.exception("Unhandled exception in request", exc_info=exc)
         return JSONResponse(
             status_code=500,
@@ -93,5 +124,4 @@ def create_app() -> FastAPI:
 
 
 #: Module-level app for uvicorn (``uvicorn app.main:app``).
-#: The factory above remains the canonical construction path.
 app = create_app()

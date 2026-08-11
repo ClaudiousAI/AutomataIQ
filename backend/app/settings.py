@@ -1,30 +1,24 @@
-"""Application settings loaded from environment / ``.env`` (M01).
+"""Application settings loaded from environment / ``.env`` (M01 + M02).
 
-Single source of truth for service boundaries. Pydantic v2 ensures every
-field is type-checked at import time — a missing env var crashes the
-process on startup, not deep in a worker.
+M02 widened the schema to cover JWT verification. The key invariant
+is *no secrets in the repo*: production deployments inject
+``JWT_SIGNING_PUBLIC_KEY`` (PEM) or ``JWT_JWKS_URL`` via the
+deployment secret store (NFR-004). Local dev uses the ``.env`` file,
+which is gitignored.
 
-M01 scope is intentionally narrow: only what the FastAPI app factory
-needs. Real secrets (DB password, LLM keys, …) come online in later
-modules and are added here as their owning module lands.
-
-Traceability: NFR-004 (no secrets committed; env injection only),
-NFR-006 (typed config contract at every service boundary).
+Traceability: NFR-004, NFR-006.
 """
 
 from __future__ import annotations
 
-from pydantic import Field
+from typing import Any, cast
+
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Process-wide settings, populated from env / ``.env``.
-
-    ``env_file`` is set to the project-root ``.env`` (the python-dotenv
-    convention). Real environment variables ALWAYS take precedence over
-    ``.env`` values — Pydantic enforces that.
-    """
+    """Process-wide settings, populated from env / ``.env``."""
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -33,7 +27,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # --- Process identity --------------------------------------------------
+    # --- Process identity (M01) --------------------------------------------
     app_name: str = Field(default="saie-api", description="Service name.")
     environment: str = Field(
         default="development",
@@ -44,7 +38,7 @@ class Settings(BaseSettings):
         description="Root log level (DEBUG|INFO|WARNING|ERROR).",
     )
 
-    # --- OTel --------------------------------------------------------------
+    # --- OTel (M01) ---------------------------------------------------------
     otel_exporter_otlp_endpoint: str | None = Field(
         default=None,
         description="OTLP collector endpoint. None disables remote export.",
@@ -54,11 +48,48 @@ class Settings(BaseSettings):
         description="OTel ``service.namespace`` resource attribute.",
     )
 
+    # --- JWT verification (M02) ---------------------------------------------
+    jwt_issuer: str = Field(
+        default="https://saie.local/realms/saie",
+        description="Expected ``iss`` claim (Keycloak realm URL in prod).",
+    )
+    jwt_audience: str = Field(
+        default="saie-api",
+        description="Expected ``aud`` claim (matches the API client ID).",
+    )
+    jwt_jwks_url: str | None = Field(
+        default=None,
+        description="URL to the JWKS document. Empty uses the offline path.",
+    )
+    jwt_jwks_inline: str | None = Field(
+        default=None,
+        description=(
+            "Inline JWKS JSON for offline / dev use. Production MUST use "
+            "``JWT_JWKS_URL``. "
+        ),
+    )
+
+    @field_validator("jwt_audience")
+    @classmethod
+    def _audience_non_empty(cls, value: str) -> str:
+        if not value:
+            raise ValueError("JWT_AUDIENCE must not be empty")
+        return value
+
+    def resolved_jwks(self) -> dict[str, Any] | str | None:
+        """Return the JWKS for the verifier.
+
+        Returns the inline dict for offline mode (dev/test), the URL
+        string for live Keycloak, or ``None`` if neither is set (which
+        would only happen in a misconfigured deployment).
+        """
+        if self.jwt_jwks_inline:
+            import json
+
+            return cast("dict[str, Any]", json.loads(self.jwt_jwks_inline))
+        return self.jwt_jwks_url
+
 
 def get_settings() -> Settings:
-    """Return a freshly-evaluated :class:`Settings` instance.
-
-    A function (not a module-level singleton) means tests can mutate
-    ``os.environ`` between calls and the new values are picked up.
-    """
+    """Return a freshly-evaluated :class:`Settings` instance."""
     return Settings()
