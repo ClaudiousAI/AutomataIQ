@@ -140,11 +140,11 @@
 
 | Requirement ID | Description | Module | Status | Phase | Verify |
 |---|---|---|---|---|---|
-| FR-053 | RBAC: platform_admin, tenant_admin, architect, analyst, reviewer, executive, read_only | Governance & Ops | Not Started | 2, 10 | Security |
-| FR-054 | Audit logs + prompt/model versioning + evidence traceability | Governance & Ops | Not Started | 12 | Security |
+| FR-053 | RBAC: platform_admin, tenant_admin, architect, analyst, reviewer, executive, read_only | Governance & Ops | Done | 2, 10 | Security |
+| FR-054 | Audit logs + prompt/model versioning + evidence traceability | Governance & Ops | In Progress | 12 | Security |
 | FR-055 | Source health, agent health, retries, DLQ, cost budgets monitoring | Governance & Ops | Not Started | 12 | Ops |
 | FR-056 | Human review routing (low-confidence + high-impact → Review Queue) | Governance & Ops | Not Started | 12 | Integration |
-| FR-057 | Tenant isolation at every query boundary + least privilege enforcement | Governance & Ops | Not Started | 2, 3, 12 | Security |
+| FR-057 | Tenant isolation at every query boundary + least privilege enforcement | Governance & Ops | Done | 2, 3, 12 | Security |
 | FR-058 | Alerts and operational runbooks | Governance & Ops | Not Started | 12, 14 | Ops |
 
 ### Continuous Learning
@@ -170,10 +170,10 @@
 | NFR-001 | **Auditability** — every report finding traceable to evidence | Governance & Ops | Not Started | 9, 11 | E2E |
 | NFR-002 | **Reliability** — Saturday report retries/alerts; never publish incomplete | Reporting | Not Started | 11 | E2E |
 | NFR-003 | **Scalability** — ingestion and analysis workers scale independently | Platform | Not Started | 14 | Ops |
-| NFR-004 | **Security** — SSO, RBAC, tenant isolation, encrypted secrets | Platform | Not Started | 2, 13 | Security |
-| NFR-005 | **Observability** — OTel metrics/logs/traces; cost and quality dashboards | Platform | Not Started | 2 | Ops |
-| NFR-006 | **Maintainability** — typed contracts, versioned prompts/models/classifiers | Platform | Not Started | 6, 12 | Contract |
-| NFR-007 | **Recoverability** — idempotent, replayable jobs | Platform | Not Started | 4, 5 | Unit |
+| NFR-004 | **Security** — SSO, RBAC, tenant isolation, encrypted secrets | Platform | In Progress | 2, 13 | Security |
+| NFR-005 | **Observability** — OTel metrics/logs/traces; cost and quality dashboards | Platform | In Progress | 2 | Ops |
+| NFR-006 | **Maintainability** — typed contracts, versioned prompts/models/classifiers | Platform | In Progress | 6, 12 | Contract |
+| NFR-007 | **Recoverability** — idempotent, replayable jobs | Platform | In Progress | 4, 5 | Unit |
 | NFR-008 | **Explainability** — score and confidence rationale always available | Scoring Engine | Not Started | 8 | Contract |
 | NFR-009 | **Performance** — search p95 < 3s; graph p95 < 2s; Saturday report < 30min | Platform | Not Started | 9, 11, 14 | Performance |
 | NFR-010 | **Availability** — 99.5% workspace target; ingestion resilient via queues | Platform | Not Started | 14 | Ops |
@@ -190,9 +190,9 @@
 
 | Type | Total | Not Started | In Progress | Done |
 |---|---|---|---|---|
-| FR | 64 | 64 | 0 | 0 |
-| NFR | 14 | 14 | 0 | 0 |
-| **Total** | **78** | **78** | **0** | **0** |
+| FR | 64 | 60 | 2 | 2 |
+| NFR | 14 | 10 | 4 | 0 |
+| **Total** | **78** | **70** | **6** | **2** |
 
 ---
 

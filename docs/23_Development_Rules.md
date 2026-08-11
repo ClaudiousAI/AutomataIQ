@@ -228,7 +228,42 @@ A module (M01–M16 per [22_Module_Roadmap](./22_Module_Roadmap.md)) is **comple
 - [ ] ADRs created/updated
 - [ ] Module status updated
 - [ ] Phase status updated
-```
+
+### 3.5 CI Quality Gate Contract (Pinned)
+
+The CI pipeline (`.github/workflows/ci.yml`) is the canonical pre-merge gate. A green local run is a green pipeline run — the gate is configured to mirror the local `make ci` (or its Python/Node equivalent) sequence line-for-line. The contract below is load-bearing: any change that weakens, bypasses, or removes one of these checks requires a deliberate ADR and a team-wide re-baseline.
+
+#### 3.5.1 Backend gate (runs on every push to `main` and every PR)
+
+| Step | Command (from `backend/`) | Rationale |
+|------|---------------------------|-----------|
+| Install | `pip install -r requirements.txt` | Reproducible env; `requirements.txt` is the source of truth for runtime + test deps (FR-053, etc. — every module adds its own deps under a labeled section). |
+| Lint | `python -m ruff check app` | Ruff covers the `app/` package tree (M01+ owned code). Test files inherit the per-file-ignores in `pyproject.toml`. |
+| Type-check | `python -m mypy --strict --explicit-package-bases app` | Strict typing on production code; per-module `tests/*` overrides in `pyproject.toml` relax the strictness on test helpers (NFR-006). |
+| Test | `pytest --cov=app --cov=notifications --cov-report=term-missing --cov-fail-under=80` | Discovery via `pyproject.toml` `testpaths` (covers `tests/`, `notifications/tests/`, and every `app/<m>/tests/`). Coverage threshold is 80% — a CI failure, not a warning. |
+
+#### 3.5.2 Frontend gate (runs on every push to `main` and every PR)
+
+| Step | Command (from `web/`) | Rationale |
+|------|------------------------|-----------|
+| Install | `npm ci || npm install` | Deterministic install from `package-lock.json`; falls back to `npm install` if the lockfile drift is intentional. |
+| Lint | `npm run lint` · `npm run format:check` | ESLint + Prettier pinned in `package.json`. |
+| Test | `npm test` | Vitest run (single-shot, CI mode). |
+| Build | `npm run build` | Vite production build — catches dead imports, broken JSX, and bundle-time type errors. |
+
+#### 3.5.3 PR-title gate (runs only on `pull_request`)
+
+The PR title must contain at least one `FR-NNN` or `NFR-NNN` identifier (`grep -Eiq '(FR-[0-9]{3}|NFR-[0-9]{3})'`). Direct pushes to `main` are intentionally permissive (a multi-PR branch may land in commits without a single Requirement ID in each message).
+
+#### 3.5.4 Adding a new module
+
+Adding a module under `app/<m>/` (e.g. `app/discovery/`) requires **no CI workflow change**, provided:
+
+- Its production code lives under `app/<m>/` (covered by `ruff check app` and `mypy --strict app`).
+- Its tests live under `app/<m>/tests/` (picked up by the `testpaths = ["app", ...]` rootdir in `pyproject.toml`).
+- Its runtime dependencies are added to `backend/requirements.txt` under a labeled `<MODULE_NAME>` section with traceability comments.
+
+Anything outside this contract (a top-level package, a non-standard test layout, a CI dependency not in `requirements.txt`) requires a docs/23 amendment in the same PR.
 
 ---
 
@@ -246,13 +281,14 @@ A module (M01–M16 per [22_Module_Roadmap](./22_Module_Roadmap.md)) is **comple
 | Requirement ID | Title | This Doc Section |
 |----------------|-------|------------------|
 | NFR-001 | Auditability | §2.1, §3.3, §8 |
-| NFR-004 | Security (tenant isolation, RBAC) | §2.3, §3.2 |
+| NFR-004 | Security (tenant isolation, RBAC) | §2.3, §3.2, §3.5 |
 | NFR-005 | Observability | §2.3, §3.1 |
-| NFR-006 | Maintainability (typed contracts, versioned prompts) | §2.3, §3.2 |
+| NFR-006 | Maintainability (typed contracts, versioned prompts) | §2.3, §3.2, §3.5 |
 | NFR-007 | Recoverability (idempotent, replayable) | §2.3 |
 | NFR-012 | Cost control (deterministic gating) | §2.3 |
 | NFR-013 | Model lock-in resistance (model-agnostic gateway) | §2.3 |
-| NFR-014 | Quality gates (golden-set eval) | §3.1 |
+| NFR-014 | Quality gates (golden-set eval, CI-enforced) | §3.1, §3.5 |
+| FR-053 | Authentication & RBAC (Keycloak OIDC + 7 roles) | §3.5 |
 | FR-055 | Source health, agent health, retries, DLQ, cost budgets monitoring | §2.2, §5 |
 | FR-056 | Human review routing (low-confidence + high-impact → Review Queue) | §2.3, §3.1, §8 |
 

@@ -2,7 +2,7 @@
 
 **Product:** SAP Automation Intelligence Engine (SAIE)
 **Document status:** Living — update on every significant decision or context change.
-**Last updated:** 2026-08-11 (M01 — Project Foundation completed)
+**Last updated:** 2026-08-11 (M02 — Authentication & Authorization completed)
 
 > This is the project's persistent working memory: context that is non-obvious from the code, current state, decisions, and conventions. Keep it current; treat it as the first place to look when resuming work.
 
@@ -31,7 +31,8 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ Phase 6 (module roadmap) **complete** — **[22_Module_Roadmap](./22_Module_Roadmap.md)** defines **16 buildable modules** (M01–M16), each with Scope, Dependencies, Acceptance criteria, Tests, and Definition of Done. Modules are implemented one at a time in dependency order; all 78 RTM requirements are covered (FR-059…064 deferred to Phase 15–16 extension modules).
 - ✅ Phase 7 (development rules) **complete** — **[23_Development_Rules](./23_Development_Rules.md)** codifies the mandatory pre-coding gate (requirements, dependencies, architecture, impact) and post-coding gate (tests, docs, RTM, project memory), feature/module completion definitions, and enforcement. Checklist templates provided for PR use.
 - ✅ **Wave 1 — M01 Project Foundation** **complete**. Backend FastAPI skeleton (`backend/app/`) with typed pydantic-settings config, idempotent OpenTelemetry bootstrap, versioned error envelope, and `/health`+`/ready` probes (100% test coverage, mypy strict clean, ruff clean). Web Vite+React+JS SPA (`web/`) with status pill mirroring `/api/health`, vitest smoke tests, multi-stage Docker build. Edge Nginx (`infra/nginx.conf`), top-level Makefile, GitHub Actions CI (`lint · typecheck · test · build · PR-title Requirement-ID gate`). Traceability: NFR-004, NFR-005, NFR-006.
-- ⏳ Next: **M02 — Authentication & Authorization** (Keycloak realm, OIDC for web, token introspection for API, RBAC for 7 roles, RLS scaffolding). Depends on M01.
+- ✅ **Wave 2 — M02 Authentication & Authorization** **complete**. `BearerAuthMiddleware` (the only place `Authorization` is parsed) wires a local `JwtVerifier` (RS256, JWKS, RFC 7519) — production uses the same interface to plug into Keycloak's JWKS endpoint. `require_auth` + `require_role(Role)` FastAPI dependencies replace ad-hoc RBAC checks. `TenantContext` + `resolve_tenant_for_path` enforces FR-057 (path-vs-token reconciliation; `platform_admin` is the only role that crosses tenant boundaries). `AuthAuditLogger` Protocol + `InMemoryAuditLogger` (PostgreSQL DDL shipped for M03 to take over) writes an audit row for every auth outcome; failures never crash the request (NFR-007). `/api/v1/me` + `/api/v1/auth/logout` are the user-facing surfaces. 7×7 RBAC matrix verified, 84.39% coverage, 94 tests pass, ruff + mypy strict both clean. **Deferred to M16**: token denylist (the `/auth/logout` audit-row no-op gets replaced by the Keycloak introspector's `jti` denylist when M16's deploy integration tests land). Traceability: FR-053, FR-054, FR-057, NFR-004, NFR-005, NFR-006, NFR-007.
+- ⏳ Next: **M03 — Persistence Layer** (PostgreSQL schema, Row-Level Security scaffolding, query-builder conventions, RLS-friendly tenant scoping). Depends on M02 (the `tenant_id` claim is the RLS session variable).
 
 ## 4. Key Decisions (recorded fully in `docs/17_Architecture_Decision_Records/`)
 

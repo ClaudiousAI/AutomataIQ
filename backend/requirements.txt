@@ -15,6 +15,13 @@ python-dotenv>=1.0.0      # .env loading
 # Pre-M01 — Brevo email transport (M12 reporting)
 requests>=2.31.0
 
+# M02 — Authentication & Authorization (FR-053, FR-054, FR-057, NFR-004)
+# RS256 JWT verification via JWKS + the dev issuer used by the test
+# suite. cryptography provides the RSA primitives the dev issuer needs
+# to mint tokens in CI without an external Keycloak.
+pyjwt>=2.8.0              # JWT decode / verify (FR-053)
+cryptography>=42.0.0      # RSA key generation for dev issuer (FR-053)
+
 # --- Test-only ----------------------------------------------------------
 # M01 — Project Foundation
 pytest>=7.0.0
