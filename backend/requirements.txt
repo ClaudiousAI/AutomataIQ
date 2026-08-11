@@ -1,0 +1,10 @@
+# SAIE backend — Python dependencies
+# Docs: docs/24_Brevo_Email_Integration.md
+# Traceability: FR-050, FR-051, NFR-002, NFR-005, NFR-007, NFR-012
+
+# Production
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Test-only
+pytest>=7.0.0
