@@ -33,6 +33,13 @@ disallow_untyped_calls = false
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra --strict-markers"
+# Without ``pythonpath = ["."]`` the test files under ``app/<m>/tests/``
+# (M02+) import ``app.auth.X`` as absolute paths — pytest's default
+# import-mode adds each test's parent directory to ``sys.path``, which
+# exposes ``app/auth/tests/`` but not ``app/`` itself. Pinning ``.``
+# (the rootdir, ``backend/``) puts ``app`` and ``notifications`` on
+# ``sys.path`` for the duration of the run, both locally and on CI.
+pythonpath = ["."]
 # Discovery is rooted at every package that ships tests. Per-module
 # ``app/<m>/tests/`` subpackages (M02+) are picked up automatically
 # via the ``app`` rootdir so the CI workflow never needs to be edited

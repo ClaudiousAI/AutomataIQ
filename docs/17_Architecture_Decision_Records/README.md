@@ -21,6 +21,8 @@
 | [0013](./0013-dast-owasp-zap.md) | DAST: OWASP ZAP | Accepted |
 | [0014](./0014-cost-minimized-open-source-stack.md) | Locked cost-minimized open-source technology stack | Accepted |
 | [0015](./0015-react-javascript-frontend.md) | React (JavaScript) + Vite frontend architecture | Accepted — amends [0001](./0001-nextjs-fastapi-stack.md) (Web UI) and [0014](./0014-cost-minimized-open-source-stack.md) (frontend row) |
+| [0016](./0016-jwt-only-auth-path.md) | JWT-only auth path with Keycloak-issued RS256 tokens | Accepted — amends [0010](./0010-keycloak-identity-provider.md) and [0014](./0014-cost-minimized-open-source-stack.md) |
+| [0017](./0017-sap-official-sites-source-registry.md) | `SAP Official Sites.txt` as the canonical Discovery Engine source registry | Accepted — pins the M07/M09 source seed at repo root |
 
 ## ADR Template
 

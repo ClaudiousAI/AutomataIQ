@@ -111,15 +111,18 @@ jobs:
       # Per docs/16 + CLAUDE.md: every PR must reference FR-NNN or NFR-NNN.
       # We only enforce on PRs; direct pushes to main are intentionally
       # permissive (commits may land a multi-PR branch in pieces).
+      # Output is published via ``$GITHUB_OUTPUT`` — plain ``echo``
+      # writes to stdout and does NOT populate ``steps.<id>.outputs``
+      # (the catch is the Fail step below always runs otherwise).
       - name: Extract Requirement IDs from PR title
         id: reqids
         run: |
           TITLE="${{ github.event.pull_request.title }}"
           if echo "$TITLE" | grep -Eiq '(FR-[0-9]{3}|NFR-[0-9]{3})'; then
-            echo "matched=true"
+            echo "matched=true" >> "$GITHUB_OUTPUT"
           else
-            echo "matched=false"
-            echo "title=$TITLE"
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            echo "title=$TITLE" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Fail when no Requirement ID found
