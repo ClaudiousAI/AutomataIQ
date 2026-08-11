@@ -1,0 +1,109 @@
+name: CI
+
+# Runs on every push and pull request. Mirrors the ``make ci`` target so
+# a local green run is a green pipeline run.
+#
+# Traceability:
+#   NFR-006 — typed contract + lint + typecheck + unit tests are
+#             mandatory gates on every PR.
+#   NFR-004 — no secrets are read by this workflow; env-only secrets
+#             land in later modules (M02/M03) when they have a use.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (lint · typecheck · test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint (ruff)
+        run: python -m ruff check app notifications tests
+
+      - name: Type-check (mypy)
+        run: python -m mypy app
+
+      - name: Test (pytest + coverage)
+        run: |
+          pytest tests/ notifications/tests/ \
+            --cov=app --cov=notifications \
+            --cov-report=term-missing \
+            --cov-fail-under=80
+
+  frontend:
+    name: Frontend (lint · test · build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Lint (eslint + prettier)
+        run: |
+          npm run lint
+          npm run format:check
+
+      - name: Test (vitest)
+        run: npm test
+
+      - name: Build (vite)
+        run: npm run build
+
+  pr-title:
+    name: PR title references a Requirement ID
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      # Per docs/16 + CLAUDE.md: every PR must reference FR-NNN or NFR-NNN.
+      # We only enforce on PRs; direct pushes to main are intentionally
+      # permissive (commits may land a multi-PR branch in pieces).
+      - name: Extract Requirement IDs from PR title
+        id: reqids
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if echo "$TITLE" | grep -Eiq '(FR-[0-9]{3}|NFR-[0-9]{3})'; then
+            echo "matched=true"
+          else
+            echo "matched=false"
+            echo "title=$TITLE"
+          fi
+
+      - name: Fail when no Requirement ID found
+        if: steps.reqids.outputs.matched != 'true'
+        run: |
+          echo "::error::PR title must reference at least one FR-NNN or NFR-NNN ID (see docs/16)."
+          exit 1

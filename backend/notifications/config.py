@@ -41,7 +41,7 @@ class BrevoConfig:
     dry_run: bool
 
     @classmethod
-    def from_env(cls) -> "BrevoConfig":
+    def from_env(cls) -> BrevoConfig:
         """Load configuration from the environment / ``.env`` file.
 
         Raises:

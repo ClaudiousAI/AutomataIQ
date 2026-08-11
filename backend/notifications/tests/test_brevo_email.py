@@ -26,7 +26,6 @@ from notifications.brevo_email import (
 )
 from notifications.config import BrevoConfig
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

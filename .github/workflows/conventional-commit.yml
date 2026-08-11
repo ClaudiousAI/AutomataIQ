@@ -1,0 +1,43 @@
+name: Conventional Commit
+
+# Enforces the ``Conventional Commits`` prefix on PR titles so the
+# release tooling can pick a semver bump automatically. Matches the
+# Development Rules gate (docs/23).
+#
+# Traceability: NFR-006 (release discipline starts in CI).
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Accept the prefixes we use today. Add to this list when a
+          # new prefix lands in docs/23.
+          types: |
+            feat
+            fix
+            chore
+            docs
+            refactor
+            perf
+            test
+            style
+            revert
+            build
+            ci
+          # The Requirement-ID pattern from .github/workflows/ci.yml is
+          # checked by the sibling workflow; this one only validates
+          # the conventional-commit prefix.
+          requireScope: false

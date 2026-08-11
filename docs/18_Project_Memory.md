@@ -2,7 +2,7 @@
 
 **Product:** SAP Automation Intelligence Engine (SAIE)
 **Document status:** Living — update on every significant decision or context change.
-**Last updated:** 2026-08-11 (Frontend stack finalized — ADR-0015)
+**Last updated:** 2026-08-11 (M01 — Project Foundation completed)
 
 > This is the project's persistent working memory: context that is non-obvious from the code, current state, decisions, and conventions. Keep it current; treat it as the first place to look when resuming work.
 
@@ -30,7 +30,8 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ Phase 5.1 (frontend stack) **complete** — **[ADR-0015](./17_Architecture_Decision_Records/0015-react-javascript-frontend.md)** locks the frontend as **React + JavaScript (Vite SPA)** served as static assets behind Nginx (no SSR, no Node runtime in production), amending ADR-0001 (Web UI) and ADR-0014 (frontend row). Frontend architecture (`docs/11`) and AI layer (`docs/21`) are now **Finalized**.
 - ✅ Phase 6 (module roadmap) **complete** — **[22_Module_Roadmap](./22_Module_Roadmap.md)** defines **16 buildable modules** (M01–M16), each with Scope, Dependencies, Acceptance criteria, Tests, and Definition of Done. Modules are implemented one at a time in dependency order; all 78 RTM requirements are covered (FR-059…064 deferred to Phase 15–16 extension modules).
 - ✅ Phase 7 (development rules) **complete** — **[23_Development_Rules](./23_Development_Rules.md)** codifies the mandatory pre-coding gate (requirements, dependencies, architecture, impact) and post-coding gate (tests, docs, RTM, project memory), feature/module completion definitions, and enforcement. Checklist templates provided for PR use.
-- ⏳ Next: **Wave 1 — M01 Project Foundation** (monorepo scaffold, CI skeleton, Docker Compose, OTel bootstrap) — the first code module; ready to build.
+- ✅ **Wave 1 — M01 Project Foundation** **complete**. Backend FastAPI skeleton (`backend/app/`) with typed pydantic-settings config, idempotent OpenTelemetry bootstrap, versioned error envelope, and `/health`+`/ready` probes (100% test coverage, mypy strict clean, ruff clean). Web Vite+React+JS SPA (`web/`) with status pill mirroring `/api/health`, vitest smoke tests, multi-stage Docker build. Edge Nginx (`infra/nginx.conf`), top-level Makefile, GitHub Actions CI (`lint · typecheck · test · build · PR-title Requirement-ID gate`). Traceability: NFR-004, NFR-005, NFR-006.
+- ⏳ Next: **M02 — Authentication & Authorization** (Keycloak realm, OIDC for web, token introspection for API, RBAC for 7 roles, RLS scaffolding). Depends on M01.
 
 ## 4. Key Decisions (recorded fully in `docs/17_Architecture_Decision_Records/`)
 
