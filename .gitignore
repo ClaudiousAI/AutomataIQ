@@ -25,3 +25,17 @@ build/
 Thumbs.db
 .idea/
 .vscode/
+
+# Backups
+*.bak
+*.better-ctx.bak
+
+# Node (if used)
+node_modules/
+
+# AI agent artifacts (generated, not source)
+AGENTS.md
+.cursorrules
+
+# Derived/working artifacts
+master_design_text.txt
