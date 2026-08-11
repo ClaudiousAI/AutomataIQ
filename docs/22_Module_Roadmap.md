@@ -133,6 +133,15 @@ Each module lists **Scope · Dependencies · Acceptance criteria · Tests · Def
 
 ### M02 — Authentication & Authorization
 
+> **Status (2026-08-11):** ✅ Complete. JWT-only auth path
+> ([ADR-0016](./17_Architecture_Decision_Records/0016-jwt-only-auth-path.md))
+> ships behind the `TokenVerifier` Protocol; CI uses a local RSA
+> `Issuer` fixture, production swaps in Keycloak's JWKS URL via
+> `JWT_JWKS_URL` env var. 7×7 RBAC matrix green, FR-057 path-vs-token
+> reconciliation enforced, audit groundwork emits the typed
+> `AuthAuditLogger` stream. Token denylist (revocation lag) and
+> Keycloak deploy integration tests deferred to M16.
+
 - **Scope**
   - Keycloak self-hosted (Docker, per [ADR-0014](./17_Architecture_Decision_Records/0014-cost-minimized-open-source-stack.md)); realm + `web`/`api` clients provisioned.
   - OIDC authorization-code flow for web; token introspection for API; refresh + logout.
@@ -152,7 +161,7 @@ Each module lists **Scope · Dependencies · Acceptance criteria · Tests · Def
   - Security: RBAC escalation matrix (7 roles × forbidden endpoints) (FR-053).
   - Security: cross-tenant token rejected (FR-057).
   - Contract: token→claims→role resolution schema (NFR-004).
-  - Integration: Keycloak → web → api happy path + refresh (NFR-004).
+  - Integration: Keycloak → web → api happy path + refresh (NFR-004). *(M16)*
 - **Definition of Done**
   - All acceptance criteria pass; RLS helpers ready for M03; RBAC matrix documented; adversarial auth suite green.
 

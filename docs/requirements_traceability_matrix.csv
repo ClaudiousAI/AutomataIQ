@@ -51,11 +51,11 @@ FR-049,Functional,ECC-to-S/4 and clean-core opportunity flags in executive secti
 FR-050,Functional,PDF HTML JSON CSV export generation,Reporting,C08,11,Integration,Not Started
 FR-051,Functional,Configurable recipients filters scoring weights and schedule per tenant,Reporting,C08,11,Contract,Not Started
 FR-052,Functional,Workspaces (Dashboard Discovery Automation Architecture Opportunity Evidence Reports Governance Administration),Workspace (UI),C09,10,E2E,Not Started
-FR-053,Functional,RBAC: platform_admin tenant_admin architect analyst reviewer executive read_only,Governance & Ops,C09,2 10,Security,Not Started
-FR-054,Functional,Audit logs + prompt/model versioning + evidence traceability,Governance & Ops,C09,12,Security,Not Started
+FR-053,Functional,RBAC: platform_admin tenant_admin architect analyst reviewer executive read_only,Governance & Ops,C09,2 10,Security,Done
+FR-054,Functional,Audit logs + prompt/model versioning + evidence traceability,Governance & Ops,C09,12,Security,In Progress
 FR-055,Functional,Source health agent health retries DLQ cost budgets monitoring,Governance & Ops,C09,12,Ops,Not Started
 FR-056,Functional,Human review routing (low-confidence + high-impact → Review Queue),Governance & Ops,C09,12,Integration,Not Started
-FR-057,Functional,Tenant isolation at every query boundary + least privilege enforcement,Governance & Ops,C09,2 3 12,Security,Not Started
+FR-057,Functional,Tenant isolation at every query boundary + least privilege enforcement,Governance & Ops,C09,2 3 12,Security,Done
 FR-058,Functional,Alerts and operational runbooks,Governance & Ops,C09,12 14,Ops,Not Started
 FR-059,Functional,Reviewer feedback capture (relevance correctness architecture scoring),Continuous Learning,C10,15,Integration,Not Started
 FR-060,Functional,Quality metrics and benchmark (golden) datasets,Continuous Learning,C10,13,Eval,Not Started
@@ -66,10 +66,10 @@ FR-064,Functional,Recommendation layer (what to build what to replace reusable a
 NFR-001,Non-Functional,Auditability — every report finding traceable to evidence,Governance & Ops,NFR,9 11,E2E,Not Started
 NFR-002,Non-Functional,Reliability — Saturday report retries/alerts; never publish incomplete,Reporting,NFR,11,E2E,Not Started
 NFR-003,Non-Functional,Scalability — ingestion and analysis workers scale independently,Platform,NFR,14,Ops,Not Started
-NFR-004,Non-Functional,Security — SSO RBAC tenant isolation encrypted secrets,Platform,NFR,2 13,Security,Not Started
-NFR-005,Non-Functional,Observability — OTel metrics/logs/traces; cost and quality dashboards,Platform,NFR,2,Ops,Not Started
-NFR-006,Non-Functional,Maintainability — typed contracts versioned prompts/models/classifiers,Platform,NFR,6 12,Contract,Not Started
-NFR-007,Non-Functional,Recoverability — idempotent replayable jobs,Platform,NFR,4 5,Unit,Not Started
+NFR-004,Non-Functional,Security — SSO RBAC tenant isolation encrypted secrets,Platform,NFR,2 13,Security,In Progress
+NFR-005,Non-Functional,Observability — OTel metrics/logs/traces; cost and quality dashboards,Platform,NFR,2,Ops,In Progress
+NFR-006,Non-Functional,Maintainability — typed contracts versioned prompts/models/classifiers,Platform,NFR,6 12,Contract,In Progress
+NFR-007,Non-Functional,Recoverability — idempotent replayable jobs,Platform,NFR,4 5,Unit,In Progress
 NFR-008,Non-Functional,Explainability — score and confidence rationale always available,Scoring Engine,NFR,8,Contract,Not Started
 NFR-009,Non-Functional,Performance — search p95 < 3s graph p95 < 2s report < 30min,Platform,NFR,9 11 14,Performance,Not Started
 NFR-010,Non-Functional,Availability — 99.5% workspace target; ingestion resilient via queues,Platform,NFR,14,Ops,Not Started
