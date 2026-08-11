@@ -2,7 +2,7 @@
 
 **Product:** SAP Automation Intelligence Engine (SAIE)
 **Document status:** Living — update on every significant decision or context change.
-**Last updated:** 2026-08-11 (M02 — Authentication & Authorization completed)
+**Last updated:** 2026-08-11 (M02 merged into `main`; ADR-0017 pins the SAP source registry for future Discovery/Opportunity agents)
 
 > This is the project's persistent working memory: context that is non-obvious from the code, current state, decisions, and conventions. Keep it current; treat it as the first place to look when resuming work.
 
@@ -33,6 +33,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - ✅ **Wave 1 — M01 Project Foundation** **complete**. Backend FastAPI skeleton (`backend/app/`) with typed pydantic-settings config, idempotent OpenTelemetry bootstrap, versioned error envelope, and `/health`+`/ready` probes (100% test coverage, mypy strict clean, ruff clean). Web Vite+React+JS SPA (`web/`) with status pill mirroring `/api/health`, vitest smoke tests, multi-stage Docker build. Edge Nginx (`infra/nginx.conf`), top-level Makefile, GitHub Actions CI (`lint · typecheck · test · build · PR-title Requirement-ID gate`). Traceability: NFR-004, NFR-005, NFR-006.
 - ✅ **Wave 2 — M02 Authentication & Authorization** **complete**. `BearerAuthMiddleware` (the only place `Authorization` is parsed) wires a local `JwtVerifier` (RS256, JWKS, RFC 7519) — production uses the same interface to plug into Keycloak's JWKS endpoint. `require_auth` + `require_role(Role)` FastAPI dependencies replace ad-hoc RBAC checks. `TenantContext` + `resolve_tenant_for_path` enforces FR-057 (path-vs-token reconciliation; `platform_admin` is the only role that crosses tenant boundaries). `AuthAuditLogger` Protocol + `InMemoryAuditLogger` (PostgreSQL DDL shipped for M03 to take over) writes an audit row for every auth outcome; failures never crash the request (NFR-007). `/api/v1/me` + `/api/v1/auth/logout` are the user-facing surfaces. 7×7 RBAC matrix verified, 84.39% coverage, 94 tests pass, ruff + mypy strict both clean. **Deferred to M16**: token denylist (the `/auth/logout` audit-row no-op gets replaced by the Keycloak introspector's `jti` denylist when M16's deploy integration tests land). Traceability: FR-053, FR-054, FR-057, NFR-004, NFR-005, NFR-006, NFR-007.
 - ⏳ Next: **M03 — Persistence Layer** (PostgreSQL schema, Row-Level Security scaffolding, query-builder conventions, RLS-friendly tenant scoping). Depends on M02 (the `tenant_id` claim is the RLS session variable).
+- 📌 **Pinned for Discovery/Opportunity work** (no schedule change): [`SAP Official Sites.txt`](../SAP Official Sites.txt) is the canonical source registry that M07's connectors and M09's gap-classification inputs must read. See ADR-0017. The plan stands as in `docs/22 §3`; this constraint does **not** reorder modules.
 
 ## 4. Key Decisions (recorded fully in `docs/17_Architecture_Decision_Records/`)
 
@@ -63,6 +64,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - **Low-confidence / high-impact items route to the Review Queue; low-confidence is never auto-promoted.** Incomplete reports are never published (retry + alert).
 - **Deterministic-first pipeline:** cheap hash/diff gates expensive semantic analysis.
 - **Tenant isolation at every query boundary**; roles: `platform_admin`, `tenant_admin`, `architect`, `analyst`, `reviewer`, `executive`, `read_only`.
+- **Discovery Engine source list is pinned.** [`SAP Official Sites.txt`](../SAP Official Sites.txt) at the repo root is the canonical seed for the M07 source registry (FR-001…FR-007) and the M09 Opportunity Engine's gap-classification inputs (FR-028). See **[ADR-0017](./17_Architecture_Decision_Records/0017-sap-official-sites-source-registry.md)**. When the M07 architect agent lands, **read this file first** before designing connectors, tiers, or crawl policy — every seed must trace back to a line in this file.
 
 ## 6. Known Gotchas
 
