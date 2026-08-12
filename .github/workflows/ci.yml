@@ -49,6 +49,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # M03a test substrate (``pytest-postgresql``) needs the real
+      # ``pg_ctl`` binary to bootstrap a private Postgres for the
+      # RLS matrix. Ubuntu's postgresql package installs the server
+      # binaries to ``/usr/lib/postgresql/<v>/bin/`` (NOT on PATH);
+      # ``app/db/tests/conftest.py::_resolve_pgctl`` walks that
+      # location so the test fixture finds ``pg_ctl`` without a
+      # separate env-var override.
+      - name: Install Postgres server (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            postgresql postgresql-contrib
+          # Print the discovered pg_ctl so a future migration to a
+          # newer Postgres version is debuggable from the CI log.
+          echo "pg_ctl=$(ls /usr/lib/postgresql/*/bin/pg_ctl | head -1)"
+
       # Lint + typecheck cover the backend package we own end-to-end
       # (the ``app/`` tree). The ``notifications/`` package ships the
       # Brevo transport; mypy strict on that tree is owned by the

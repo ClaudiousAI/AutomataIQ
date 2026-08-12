@@ -110,8 +110,14 @@ def _find_free_port() -> int:
 def _resolve_pgctl() -> str | None:
     """Locate a ``pg_ctl`` executable for ``pytest-postgresql``.
 
-    Returns the absolute path if found, ``None`` otherwise. Checks the
-    ``PG_CTL`` env var first (lets CI override), then ``PATH``.
+    Returns the absolute path if found, ``None`` otherwise. Resolution
+    order:
+
+    1. ``PG_CTL`` env var if set and points at an existing file.
+    2. ``pg_ctl`` on ``PATH`` (the developer-machine path).
+    3. The versioned Ubuntu/Debian location, ``/usr/lib/postgresql/<v>/bin/
+       pg_ctl`` (the CI path — Ubuntu's postgresql package installs the
+       server binaries there but does NOT add the directory to PATH).
     """
     explicit = os.environ.get("PG_CTL")
     if explicit and Path(explicit).exists():
@@ -119,6 +125,15 @@ def _resolve_pgctl() -> str | None:
     which = shutil.which("pg_ctl")
     if which:
         return which
+    # Debian/Ubuntu install postgresql's server binaries into a
+    # versioned subdirectory that is NOT on PATH. Walk the candidates
+    # so the CI runner doesn't need a separate env-var override.
+    pg_root = Path("/usr/lib/postgresql")
+    if pg_root.is_dir():
+        for version_dir in sorted(pg_root.iterdir(), reverse=True):
+            candidate = version_dir / "bin" / "pg_ctl"
+            if candidate.exists():
+                return str(candidate)
     return None
 
 
