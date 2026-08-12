@@ -22,11 +22,20 @@ requests>=2.31.0
 pyjwt>=2.8.0              # JWT decode / verify (FR-053)
 cryptography>=42.0.0      # RSA key generation for dev issuer (FR-053)
 
+# M03 — Database & Storage (FR-001, FR-008, FR-019, FR-038, FR-043, NFR-004, NFR-006, NFR-007)
+sqlalchemy>=2.0
+alembic>=1.13
+psycopg[binary]>=3.1
+asyncpg>=0.29
+
 # --- Test-only ----------------------------------------------------------
 # M01 — Project Foundation
 pytest>=7.0.0
 pytest-cov>=4.1.0
 httpx>=0.27.0             # Required by FastAPI TestClient
+
+# M03 — Database & Storage (test-only)
+pytest-postgresql>=6.0
 
 # M04+ — Type / lint tooling
 ruff>=0.4.0
