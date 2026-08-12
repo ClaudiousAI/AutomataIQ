@@ -74,9 +74,11 @@ import pytest
 _pgserver_cls: Any = None
 _pgserver_bin: Path | None = None
 try:  # pragma: no cover - environment-specific branch
-    from pgserver import PostgresServer as _pgserver_cls  # type: ignore[attr-defined]
+    # Import the class under its own name, then assign to the pre-declared
+    # _pgserver_cls variable. This avoids mypy's no-redef error.
+    from pgserver import PostgresServer  # type: ignore[attr-defined]
 
-    _pgserver_bin = Path(_pgserver_cls.__module__)  # unused, kept for parity
+    _pgserver_cls = PostgresServer
     # pgserver's binary path is <pkg>/pginstall/bin — resolve via the
     # module file rather than ``__module__`` to stay robust.
     import pgserver as _pgserver_pkg  # noqa: F401
