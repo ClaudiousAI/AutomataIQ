@@ -86,3 +86,47 @@ def test_no_psql_bootstrap_grants_schema_usage() -> None:
     app_usage, migrator_create = row
     assert app_usage is True, "saie_app missing USAGE on public schema"
     assert migrator_create is True, "saie_migrator missing CREATE on public schema"
+
+
+def test_saie_migrator_owns_saie_test() -> None:
+    """``saie_migrator`` owns ``saie_test`` so it can ``CREATE EXTENSION``.
+
+    Locks the contract that the migration's ``CREATE EXTENSION IF
+    NOT EXISTS pgcrypto`` (and any future extension like ``pg_trgm``)
+    succeeds without ``permission denied`` errors. Without ownership
+    the migration raises ``InsufficientPrivilege`` rather than the
+    DO-block's expected ``feature_not_supported``, aborts alembic,
+    and crashes the session fixture — which then surfaces as 177
+    cascading test errors with coverage at 76% instead of 80%.
+
+    This test connects to ``postgres`` (the substrate's superuser)
+    and asks the catalog directly for the DB owner. Production
+    Postgres enforces the same ownership requirement via
+    ``init.sql``: ``CREATE DATABASE saie OWNER saie_migrator``.
+    """
+    dsn_admin = (
+        f"host={os.environ['SAIE_TEST_PGHOST']} "
+        f"port={os.environ['SAIE_TEST_PGPORT']} "
+        f"dbname=postgres "
+        f"user={os.environ['SAIE_TEST_PGUSER']} "
+        f"password={os.environ['SAIE_TEST_PGPASSWORD']}"
+    )
+    # We can't connect to saie_test as saie_app to query pg_database
+    # (privilege); use the admin DB and the substrate's superuser.
+    host_port = dsn_admin.split(" dbname=")[0]
+    super_dsn = host_port + " dbname=postgres user=postgres password="
+    with psycopg.connect(super_dsn) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT pg_catalog.pg_get_userbyid(datdba) "
+                "FROM pg_database WHERE datname = 'saie_test'"
+            )
+            row = cur.fetchone()
+    assert row is not None, "saie_test database not found in pg_database"
+    (owner,) = row
+    assert owner == "saie_migrator", (
+        f"saie_test must be OWNED by saie_migrator so the migration "
+        f"can CREATE EXTENSION pgcrypto (current owner: {owner!r}). "
+        f"This is set in conftest.py via ALTER DATABASE saie_test "
+        f"OWNER TO saie_migrator, mirroring init.sql."
+    )

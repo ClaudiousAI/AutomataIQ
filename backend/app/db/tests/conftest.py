@@ -465,6 +465,32 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
             password=password,
         )
 
+    # 2b. Mirror ``infra/postgres/init.sql``: ``saie_migrator`` must
+    # own ``saie_test`` (production ``saie`` DB is also owned by
+    # ``saie_migrator``). Without ownership the migration's
+    # ``CREATE EXTENSION IF NOT EXISTS pgcrypto`` fails with
+    # ``permission denied to create extension "pgcrypto"`` on any
+    # Linux cluster where pgcrypto is installed (Ubuntu's
+    # ``postgresql-contrib`` ships it). The DO-block in the
+    # migration only swallows ``feature_not_supported``; the
+    # ``insufficient_privilege`` error bubbles up and aborts
+    # alembic, which then crashes the fixture. We re-OWN here on
+    # BOTH paths (psql and no-psql) because the test fixture
+    # creates ``saie_test`` via ``CREATE DATABASE saie_test`` —
+    # which assigns ownership to whoever the admin connection is
+    # (always the substrate's superuser, not saie_migrator). The
+    # init.sql psql path's ``CREATE DATABASE saie OWNER
+    # saie_migrator`` is a no-op because the DB already exists by
+    # the time init.sql runs, so we have to do it here explicitly.
+    # Idempotent: re-running the fixture on the same cluster is safe.
+    with psycopg.connect(
+        f"host={host} port={port} dbname=saie_test "
+        f"user={user} password={password}",
+        autocommit=True,
+    ) as conn:
+        with conn.cursor() as cur:
+            cur.execute("ALTER DATABASE saie_test OWNER TO saie_migrator")
+
     # 3. Inject env vars so app.settings + alembic resolve the right URLs.
     os.environ["DATABASE_URL"] = (
         f"postgresql+psycopg://saie_app:saie_app@{host}:{port}/saie_test"
