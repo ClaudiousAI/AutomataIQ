@@ -186,7 +186,15 @@ def _start_pgserver() -> _PostgresHandle:
 
 
 def _start_pytest_postgresql() -> _PostgresHandle:
-    """Boot a ``pytest-postgresql`` Postgres instance (Linux CI path)."""
+    """Boot a ``pytest-postgresql`` Postgres instance (Linux CI path).
+
+    The executor passes ``--auth=trust`` to ``initdb`` (because we
+    pass ``password=""``), which produces a ``pg_hba.conf`` with
+    ``trust`` auth on localhost — exactly what the M03a tests need
+    since the cluster is loopback-isolated and per-session-tempdir
+    scoped, and the role passwords are seeded later via
+    ``infra/postgres/init.sql``.
+    """
     if _pgexec_cls is None:
         raise RuntimeError("pytest-postgresql is not installed")
     pg_ctl = _resolve_pgctl()
