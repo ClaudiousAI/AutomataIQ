@@ -42,7 +42,6 @@ Traceability: FR-057, NFR-004, NFR-007, NFR-014.
 from __future__ import annotations
 
 import os
-import re
 import shutil
 import socket
 import subprocess
@@ -136,27 +135,6 @@ def _resolve_pgctl() -> str | None:
             if candidate.exists():
                 return str(candidate)
     return None
-
-
-def _strip_psql_metacommands(sql_text: str) -> str:
-    """Remove psql-specific metacommands from SQL text.
-
-    psql metacommands (backslash commands like \\set, \\gexec, \\if, etc.)
-    are not valid PostgreSQL syntax and will cause syntax errors when
-    executed via psycopg. This function strips them out, leaving only
-    valid SQL statements.
-
-    Lines starting with \\ (after stripping whitespace) are removed,
-    as are empty lines. All other lines are preserved.
-    """
-    lines = []
-    for line in sql_text.split("\n"):
-        stripped = line.lstrip()
-        # Skip psql metacommands (lines starting with backslash)
-        # and empty lines
-        if not stripped.startswith("\\") and stripped:
-            lines.append(line)
-    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -268,6 +246,99 @@ def _select_substrate() -> str:
 
 
 # ---------------------------------------------------------------------------
+# Role bootstrap — init.sql in pure-SQL form for the no-psql path.
+# ---------------------------------------------------------------------------
+
+
+_ROLE_BOOTSTRAP_STATEMENTS: tuple[str, ...] = (
+    # 1. Roles (idempotent — DO/EXCEPTION pattern; mirrors init.sql).
+    """
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'saie_migrator') THEN
+            CREATE ROLE saie_migrator WITH LOGIN PASSWORD 'saie_migrator';
+        END IF;
+    END
+    $$;
+    """,
+    """
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'saie_app') THEN
+            CREATE ROLE saie_app WITH LOGIN PASSWORD 'saie_app';
+        END IF;
+    END
+    $$;
+    """,
+    """
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'saie_platform_admin') THEN
+            CREATE ROLE saie_platform_admin WITH LOGIN PASSWORD 'saie_platform_admin';
+        END IF;
+    END
+    $$;
+    """,
+    # saie_migrator must own the schema + have BYPASSRLS so Alembic
+    # can run DDL + policies without tripping RLS.
+    "ALTER ROLE saie_migrator BYPASSRLS;",
+    # 2. Grants — must run AFTER ``CREATE DATABASE saie_test`` (above).
+    # The ``saie_test`` database is created above by the test fixture;
+    # the role grants then run inside that DB. The schema grants are
+    # on the ``public`` schema that ``initdb`` creates by default.
+    """
+    DO $$
+    BEGIN
+        EXECUTE 'GRANT USAGE, CREATE ON SCHEMA public TO saie_migrator';
+        EXECUTE 'GRANT USAGE ON SCHEMA public TO saie_app, saie_platform_admin';
+        EXECUTE 'GRANT CONNECT ON DATABASE saie_test TO saie_app, saie_platform_admin';
+    END
+    $$;
+    """,
+    # Default privileges — these records are owned by ``saie_migrator``
+    # (the role that runs the test fixtures' migration step), so they
+    # take effect for every new relation. We must set ``ROLE`` before
+    # these ``ALTER DEFAULT PRIVILEGES`` statements run.
+    "SET ROLE saie_migrator;",
+    """
+    ALTER DEFAULT PRIVILEGES FOR ROLE saie_migrator IN SCHEMA public
+        GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES
+        TO saie_app, saie_platform_admin;
+    """,
+    """
+    ALTER DEFAULT PRIVILEGES FOR ROLE saie_migrator IN SCHEMA public
+        GRANT USAGE, SELECT ON SEQUENCES
+        TO saie_app, saie_platform_admin;
+    """,
+    "RESET ROLE;",
+)
+
+
+def _apply_role_bootstrap(
+    *,
+    host: str,
+    port: int,
+    user: str,
+    password: str,
+) -> None:
+    """Replay ``infra/postgres/init.sql`` against ``saie_test`` via psycopg.
+
+    Used only on the no-psql substrate path (pytest-postgresql on
+    Linux CI). See the comment block at the call site for the full
+    rationale. Each statement is idempotent — re-running the fixture
+    on the same cluster is safe.
+    """
+    dsn = (
+        f"host={host} port={port} dbname=saie_test "
+        f"user={user} password={password}"
+    )
+    with psycopg.connect(dsn, autocommit=True) as conn:
+        with conn.cursor() as cur:
+            for stmt in _ROLE_BOOTSTRAP_STATEMENTS:
+                cur.execute(stmt)
+
+
+# ---------------------------------------------------------------------------
 # Session-scoped fixtures.
 # ---------------------------------------------------------------------------
 
@@ -333,7 +404,30 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
             cur.execute("DROP DATABASE IF EXISTS saie_test")
             cur.execute("CREATE DATABASE saie_test")
 
-    # 2. Apply infra/postgres/init.sql.
+    # 2. Bootstrap the SAIE roles + grants inside ``saie_test``.
+    #
+    # Production / dev bootstrap lives in ``infra/postgres/init.sql``
+    # and ships psql-only metacommands (``\set ON_ERROR_STOP``,
+    # ``\gexec``). ``psql`` is only bundled with the pgserver Windows
+    # substrate — on the ``pytest-postgresql`` Linux path there is
+    # no ``psql`` binary at all, so we cannot pipe the file through
+    # ``psql -f``. Trying to ``cur.execute()`` the file's verbatim
+    # text into ``psycopg`` raises ``syntax error at or near "\set"``
+    # because psycopg parses SQL, not psql metacommands.
+    #
+    # Strategy: when ``psql`` is available (Windows / pgserver path)
+    # we run the canonical file — that's what a maintainer would do
+    # in production, and any future psql construct we add to
+    # ``init.sql`` works without test-fixture changes. When ``psql``
+    # is NOT available (Linux / pytest-postgresql CI path) we replay
+    # the SAME logical bootstrap (role creates, BYPASSRLS, schema
+    # grants, default privileges) inline as a list of plain SQL
+    # statements. The inline copy is intentionally a thin
+    # re-implementation, not a stripped version of the file —
+    # filtering backslashes is fragile (``\gexec`` does real work,
+    # not just decoration) and a future ``\if`` would silently
+    # no-op on the no-psql path without it. The two paths must
+    # produce equivalent end states.
     repo_root = Path(__file__).resolve().parents[4]
     init_sql = repo_root / "infra" / "postgres" / "init.sql"
     psql_bin: Path | None = None
@@ -346,6 +440,10 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
     env = os.environ.copy()
     env["PGPASSWORD"] = password
     if psql_bin is not None:
+        # psql path: run the canonical file. ``ON_ERROR_STOP=1``
+        # guarantees the first error aborts the run (matches the
+        # ``\set ON_ERROR_STOP on`` the file declares for itself
+        # when invoked by a developer).
         subprocess.run(
             [
                 str(psql_bin), "-h", host, "-p", str(port),
@@ -357,18 +455,41 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
             capture_output=True,
         )
     else:
-        # No psql (pytest-postgresql path): execute the SQL via psycopg.
-        # Strip psql metacommands (\\set, \\gexec, etc.) before executing
-        # since psycopg cannot interpret them — they're psql-only commands.
-        with psycopg.connect(
-            f"host={host} port={port} dbname=saie_test "
-            f"user={user} password={password}",
-            autocommit=True,
-        ) as conn:
-            with conn.cursor() as cur:
-                sql_text = init_sql.read_text()
-                clean_sql = _strip_psql_metacommands(sql_text)
-                cur.execute(clean_sql)
+        # No-psql path: replay the bootstrap as pure SQL via psycopg.
+        # Each ``DO $$ ... EXCEPTION WHEN duplicate_object ... END $$``
+        # is idempotent — re-runs across the session are safe.
+        _apply_role_bootstrap(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+        )
+
+    # 2b. Mirror ``infra/postgres/init.sql``: ``saie_migrator`` must
+    # own ``saie_test`` (production ``saie`` DB is also owned by
+    # ``saie_migrator``). Without ownership the migration's
+    # ``CREATE EXTENSION IF NOT EXISTS pgcrypto`` fails with
+    # ``permission denied to create extension "pgcrypto"`` on any
+    # Linux cluster where pgcrypto is installed (Ubuntu's
+    # ``postgresql-contrib`` ships it). The DO-block in the
+    # migration only swallows ``feature_not_supported``; the
+    # ``insufficient_privilege`` error bubbles up and aborts
+    # alembic, which then crashes the fixture. We re-OWN here on
+    # BOTH paths (psql and no-psql) because the test fixture
+    # creates ``saie_test`` via ``CREATE DATABASE saie_test`` —
+    # which assigns ownership to whoever the admin connection is
+    # (always the substrate's superuser, not saie_migrator). The
+    # init.sql psql path's ``CREATE DATABASE saie OWNER
+    # saie_migrator`` is a no-op because the DB already exists by
+    # the time init.sql runs, so we have to do it here explicitly.
+    # Idempotent: re-running the fixture on the same cluster is safe.
+    with psycopg.connect(
+        f"host={host} port={port} dbname=saie_test "
+        f"user={user} password={password}",
+        autocommit=True,
+    ) as conn:
+        with conn.cursor() as cur:
+            cur.execute("ALTER DATABASE saie_test OWNER TO saie_migrator")
 
     # 3. Inject env vars so app.settings + alembic resolve the right URLs.
     os.environ["DATABASE_URL"] = (
@@ -392,6 +513,19 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
     env["PYTHONPATH"] = str(backend_dir) + os.pathsep + env.get("PYTHONPATH", "")
     env["DATABASE_URL"] = os.environ["DATABASE_URL"]
     env["MIGRATOR_DATABASE_URL"] = os.environ["MIGRATOR_DATABASE_URL"]
+    # Scratch dir for diagnostic captures. Portability note: the
+    # previous version of this handler hardcoded ``C:/pgserver_data``,
+    # which works on the Windows dev machine but throws
+    # ``FileNotFoundError`` on Linux CI (no such directory on
+    # Ubuntu runners, and the pytest-postgresql substrate stores
+    # its data dir under ``/tmp/saie_pg_*`` which is wiped at
+    # session teardown — too short-lived for a diagnostic we may
+    # need to read AFTER pytest has exited). ``tempfile.gettempdir``
+    # resolves to ``/tmp`` on Linux and ``C:\Users\<u>\AppData\Local\
+    # Temp`` on Windows, both sticky enough to grep after a failure
+    # and both writable by the CI runner / dev account without
+    # privilege escalation.
+    diagnostics_dir = Path(tempfile.gettempdir()) / "saie_test_diagnostics"
     try:
         result = subprocess.run(
             [sys.executable, "-m", "alembic", "upgrade", "head"],
@@ -403,14 +537,21 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
     except subprocess.CalledProcessError as exc:
         # Surface the actual migration error in the pytest output so the
         # root cause isn't buried in a CalledProcessError returncode-1.
-        Path("C:/pgserver_data/m03a_alembic.err").write_bytes(
-            exc.stderr or b"<no stderr>"
-        )
-        Path("C:/pgserver_data/m03a_alembic.out").write_bytes(
-            exc.stdout or b"<no stdout>"
-        )
+        # Wrapped in a defensive try/except so a permission error writing
+        # the diagnostic does NOT mask the real alembic error.
+        try:
+            diagnostics_dir.mkdir(parents=True, exist_ok=True)
+            (diagnostics_dir / "m03a_alembic.err").write_bytes(
+                exc.stderr or b"<no stderr>"
+            )
+            (diagnostics_dir / "m03a_alembic.out").write_bytes(
+                exc.stdout or b"<no stdout>"
+            )
+        except OSError:
+            pass  # never let a diagnostic-write failure hide the real error
         print("[conftest] alembic STDOUT:", (exc.stdout or b"").decode(errors="replace"))
         print("[conftest] alembic STDERR:", (exc.stderr or b"").decode(errors="replace"))
+        print(f"[conftest] (also captured at {diagnostics_dir}/m03a_alembic.*)")
         raise
     print("[conftest] alembic upgrade head:", result.stdout.decode().strip())
 

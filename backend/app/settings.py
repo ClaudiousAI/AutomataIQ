@@ -1,4 +1,4 @@
-"""Application settings loaded from environment / ``.env`` (M01 + M02).
+"""Application settings loaded from environment / ``.env`` (M01 + M02 + M03a).
 
 M02 widened the schema to cover JWT verification. The key invariant
 is *no secrets in the repo*: production deployments inject
@@ -6,7 +6,14 @@ is *no secrets in the repo*: production deployments inject
 deployment secret store (NFR-004). Local dev uses the ``.env`` file,
 which is gitignored.
 
-Traceability: NFR-004, NFR-006.
+M03a added database URL fields. The two-URL split is intentional:
+``migrator_database_url`` is the BYPASSRLS connection Alembic uses
+so DDL/DML during schema setup is never blocked by tenant policies;
+``database_url`` is the RLS-bound connection the FastAPI app uses
+(M04).
+
+Traceability: NFR-004, NFR-006, FR-001, FR-008, FR-019, FR-038,
+FR-043, NFR-007.
 """
 
 from __future__ import annotations
@@ -75,6 +82,28 @@ class Settings(BaseSettings):
         if not value:
             raise ValueError("JWT_AUDIENCE must not be empty")
         return value
+
+    # --- Database (M03a) ----------------------------------------------------
+    #: Connection string the FastAPI app uses. Subject to RLS.
+    database_url: str = Field(
+        default="postgresql+psycopg://saie_app:saie_app@localhost:5432/saie",
+        description=(
+            "SQLAlchemy URL for the RLS-bound application connection. "
+            "M04's tenant dependency uses this; the FastAPI process "
+            "must never connect as ``saie_migrator``."
+        ),
+    )
+    #: Connection string Alembic uses. BYPASSRLS via the ``saie_migrator``
+    #: role so DDL/DML during schema setup is not blocked by tenant
+    #: policies. See ``infra/postgres/init.sql``.
+    migrator_database_url: str = Field(
+        default="postgresql+psycopg://saie_migrator:saie_migrator@localhost:5432/saie",
+        description=(
+            "SQLAlchemy URL for Alembic. Connects as ``saie_migrator`` "
+            "which has BYPASSRLS — required because migration DDL runs "
+            "before any tenant context exists."
+        ),
+    )
 
     def resolved_jwks(self) -> dict[str, Any] | str | None:
         """Return the JWKS for the verifier.

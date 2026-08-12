@@ -39,3 +39,9 @@ AGENTS.md
 
 # Derived/working artifacts
 master_design_text.txt
+
+# Architect / orchestrator working briefs (staging files for the wizard agent; never commit)
+*.m03a_architect_brief.md
+*.m03b_architect_brief.md
+*.m03c_architect_brief.md
+.tmp_pr_body.json
