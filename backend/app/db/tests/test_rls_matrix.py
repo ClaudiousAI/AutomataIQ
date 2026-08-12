@@ -34,13 +34,14 @@ Traceability: FR-057, NFR-004, NFR-007.
 from __future__ import annotations
 
 import datetime as _dt
+from collections.abc import Iterator
 
 import psycopg
 import pytest
 
 
 @pytest.fixture(autouse=True)
-def _clear_seed_cache() -> None:
+def _clear_seed_cache() -> Iterator[None]:
     """Clear the per-tenant parent-row cache between tests.
 
     Each test gets a fresh transaction (rolled back on teardown), so
