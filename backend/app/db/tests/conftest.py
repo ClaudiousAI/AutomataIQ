@@ -487,6 +487,19 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
     env["PYTHONPATH"] = str(backend_dir) + os.pathsep + env.get("PYTHONPATH", "")
     env["DATABASE_URL"] = os.environ["DATABASE_URL"]
     env["MIGRATOR_DATABASE_URL"] = os.environ["MIGRATOR_DATABASE_URL"]
+    # Scratch dir for diagnostic captures. Portability note: the
+    # previous version of this handler hardcoded ``C:/pgserver_data``,
+    # which works on the Windows dev machine but throws
+    # ``FileNotFoundError`` on Linux CI (no such directory on
+    # Ubuntu runners, and the pytest-postgresql substrate stores
+    # its data dir under ``/tmp/saie_pg_*`` which is wiped at
+    # session teardown — too short-lived for a diagnostic we may
+    # need to read AFTER pytest has exited). ``tempfile.gettempdir``
+    # resolves to ``/tmp`` on Linux and ``C:\Users\<u>\AppData\Local\
+    # Temp`` on Windows, both sticky enough to grep after a failure
+    # and both writable by the CI runner / dev account without
+    # privilege escalation.
+    diagnostics_dir = Path(tempfile.gettempdir()) / "saie_test_diagnostics"
     try:
         result = subprocess.run(
             [sys.executable, "-m", "alembic", "upgrade", "head"],
@@ -498,14 +511,21 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
     except subprocess.CalledProcessError as exc:
         # Surface the actual migration error in the pytest output so the
         # root cause isn't buried in a CalledProcessError returncode-1.
-        Path("C:/pgserver_data/m03a_alembic.err").write_bytes(
-            exc.stderr or b"<no stderr>"
-        )
-        Path("C:/pgserver_data/m03a_alembic.out").write_bytes(
-            exc.stdout or b"<no stdout>"
-        )
+        # Wrapped in a defensive try/except so a permission error writing
+        # the diagnostic does NOT mask the real alembic error.
+        try:
+            diagnostics_dir.mkdir(parents=True, exist_ok=True)
+            (diagnostics_dir / "m03a_alembic.err").write_bytes(
+                exc.stderr or b"<no stderr>"
+            )
+            (diagnostics_dir / "m03a_alembic.out").write_bytes(
+                exc.stdout or b"<no stdout>"
+            )
+        except OSError:
+            pass  # never let a diagnostic-write failure hide the real error
         print("[conftest] alembic STDOUT:", (exc.stdout or b"").decode(errors="replace"))
         print("[conftest] alembic STDERR:", (exc.stderr or b"").decode(errors="replace"))
+        print(f"[conftest] (also captured at {diagnostics_dir}/m03a_alembic.*)")
         raise
     print("[conftest] alembic upgrade head:", result.stdout.decode().strip())
 
