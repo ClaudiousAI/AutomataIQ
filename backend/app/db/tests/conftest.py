@@ -40,10 +40,10 @@ import pytest
 # None and pytest-postgresql resolves pg_ctl itself. ``pgserver`` is
 # not type-annotated upstream, so the fixture imports + use carry
 # ``type: ignore[attr-defined]`` markers; this is the documented mypy
-# escape hatch for untyped third-party packages. NOTE: locally the
-# ignore may be reported as ``unused-ignore`` because the installed
-# ``pgserver`` wheel varies in whether it exposes symbols via
-# ``__all__`` — both diagnostics are intentional and safe.
+# escape hatch for untyped third-party packages. The
+# ``disable_error_code = ["unused-ignore"]`` override in
+# ``pyproject.toml`` for test modules silences the
+# ``unused-ignore`` flavor on wheels where pgserver resolves cleanly.
 try:  # pragma: no cover - environment-specific branch
     import pgserver as _pgserver_pkg  # noqa: F401
     from pgserver import PostgresServer as _PostgresServer  # type: ignore[attr-defined]

@@ -29,6 +29,13 @@ files = ["app"]
 module = ["app.*.tests.*", "notifications.tests.*", "tests.*"]
 disallow_untyped_defs = false
 disallow_untyped_calls = false
+# Tests are also the seam that imports optional third-party test
+# substrates (``pgserver`` is untyped and varies in ``__all__``
+# between wheels); a ``# type: ignore`` that masks a real error on
+# one developer's machine may report ``unused-ignore`` on another's.
+# Both signals are intentional and we silence ``unused-ignore``
+# rather than strip the comments.
+disable_error_code = ["unused-ignore"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
