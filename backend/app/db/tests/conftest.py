@@ -246,6 +246,99 @@ def _select_substrate() -> str:
 
 
 # ---------------------------------------------------------------------------
+# Role bootstrap — init.sql in pure-SQL form for the no-psql path.
+# ---------------------------------------------------------------------------
+
+
+_ROLE_BOOTSTRAP_STATEMENTS: tuple[str, ...] = (
+    # 1. Roles (idempotent — DO/EXCEPTION pattern; mirrors init.sql).
+    """
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'saie_migrator') THEN
+            CREATE ROLE saie_migrator WITH LOGIN PASSWORD 'saie_migrator';
+        END IF;
+    END
+    $$;
+    """,
+    """
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'saie_app') THEN
+            CREATE ROLE saie_app WITH LOGIN PASSWORD 'saie_app';
+        END IF;
+    END
+    $$;
+    """,
+    """
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'saie_platform_admin') THEN
+            CREATE ROLE saie_platform_admin WITH LOGIN PASSWORD 'saie_platform_admin';
+        END IF;
+    END
+    $$;
+    """,
+    # saie_migrator must own the schema + have BYPASSRLS so Alembic
+    # can run DDL + policies without tripping RLS.
+    "ALTER ROLE saie_migrator BYPASSRLS;",
+    # 2. Grants — must run AFTER ``CREATE DATABASE saie_test`` (above).
+    # The ``saie_test`` database is created above by the test fixture;
+    # the role grants then run inside that DB. The schema grants are
+    # on the ``public`` schema that ``initdb`` creates by default.
+    """
+    DO $$
+    BEGIN
+        EXECUTE 'GRANT USAGE, CREATE ON SCHEMA public TO saie_migrator';
+        EXECUTE 'GRANT USAGE ON SCHEMA public TO saie_app, saie_platform_admin';
+        EXECUTE 'GRANT CONNECT ON DATABASE saie_test TO saie_app, saie_platform_admin';
+    END
+    $$;
+    """,
+    # Default privileges — these records are owned by ``saie_migrator``
+    # (the role that runs the test fixtures' migration step), so they
+    # take effect for every new relation. We must set ``ROLE`` before
+    # these ``ALTER DEFAULT PRIVILEGES`` statements run.
+    "SET ROLE saie_migrator;",
+    """
+    ALTER DEFAULT PRIVILEGES FOR ROLE saie_migrator IN SCHEMA public
+        GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES
+        TO saie_app, saie_platform_admin;
+    """,
+    """
+    ALTER DEFAULT PRIVILEGES FOR ROLE saie_migrator IN SCHEMA public
+        GRANT USAGE, SELECT ON SEQUENCES
+        TO saie_app, saie_platform_admin;
+    """,
+    "RESET ROLE;",
+)
+
+
+def _apply_role_bootstrap(
+    *,
+    host: str,
+    port: int,
+    user: str,
+    password: str,
+) -> None:
+    """Replay ``infra/postgres/init.sql`` against ``saie_test`` via psycopg.
+
+    Used only on the no-psql substrate path (pytest-postgresql on
+    Linux CI). See the comment block at the call site for the full
+    rationale. Each statement is idempotent — re-running the fixture
+    on the same cluster is safe.
+    """
+    dsn = (
+        f"host={host} port={port} dbname=saie_test "
+        f"user={user} password={password}"
+    )
+    with psycopg.connect(dsn, autocommit=True) as conn:
+        with conn.cursor() as cur:
+            for stmt in _ROLE_BOOTSTRAP_STATEMENTS:
+                cur.execute(stmt)
+
+
+# ---------------------------------------------------------------------------
 # Session-scoped fixtures.
 # ---------------------------------------------------------------------------
 
@@ -311,7 +404,30 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
             cur.execute("DROP DATABASE IF EXISTS saie_test")
             cur.execute("CREATE DATABASE saie_test")
 
-    # 2. Apply infra/postgres/init.sql.
+    # 2. Bootstrap the SAIE roles + grants inside ``saie_test``.
+    #
+    # Production / dev bootstrap lives in ``infra/postgres/init.sql``
+    # and ships psql-only metacommands (``\set ON_ERROR_STOP``,
+    # ``\gexec``). ``psql`` is only bundled with the pgserver Windows
+    # substrate — on the ``pytest-postgresql`` Linux path there is
+    # no ``psql`` binary at all, so we cannot pipe the file through
+    # ``psql -f``. Trying to ``cur.execute()`` the file's verbatim
+    # text into ``psycopg`` raises ``syntax error at or near "\set"``
+    # because psycopg parses SQL, not psql metacommands.
+    #
+    # Strategy: when ``psql`` is available (Windows / pgserver path)
+    # we run the canonical file — that's what a maintainer would do
+    # in production, and any future psql construct we add to
+    # ``init.sql`` works without test-fixture changes. When ``psql``
+    # is NOT available (Linux / pytest-postgresql CI path) we replay
+    # the SAME logical bootstrap (role creates, BYPASSRLS, schema
+    # grants, default privileges) inline as a list of plain SQL
+    # statements. The inline copy is intentionally a thin
+    # re-implementation, not a stripped version of the file —
+    # filtering backslashes is fragile (``\gexec`` does real work,
+    # not just decoration) and a future ``\if`` would silently
+    # no-op on the no-psql path without it. The two paths must
+    # produce equivalent end states.
     repo_root = Path(__file__).resolve().parents[4]
     init_sql = repo_root / "infra" / "postgres" / "init.sql"
     psql_bin: Path | None = None
@@ -324,6 +440,10 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
     env = os.environ.copy()
     env["PGPASSWORD"] = password
     if psql_bin is not None:
+        # psql path: run the canonical file. ``ON_ERROR_STOP=1``
+        # guarantees the first error aborts the run (matches the
+        # ``\set ON_ERROR_STOP on`` the file declares for itself
+        # when invoked by a developer).
         subprocess.run(
             [
                 str(psql_bin), "-h", host, "-p", str(port),
@@ -335,14 +455,15 @@ def saie_test_dsn(_pg_server: _PostgresHandle) -> str:
             capture_output=True,
         )
     else:
-        # No psql (pytest-postgresql path): execute the SQL via psycopg.
-        with psycopg.connect(
-            f"host={host} port={port} dbname=saie_test "
-            f"user={user} password={password}",
-            autocommit=True,
-        ) as conn:
-            with conn.cursor() as cur:
-                cur.execute(init_sql.read_text())
+        # No-psql path: replay the bootstrap as pure SQL via psycopg.
+        # Each ``DO $$ ... EXCEPTION WHEN duplicate_object ... END $$``
+        # is idempotent — re-runs across the session are safe.
+        _apply_role_bootstrap(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+        )
 
     # 3. Inject env vars so app.settings + alembic resolve the right URLs.
     os.environ["DATABASE_URL"] = (
