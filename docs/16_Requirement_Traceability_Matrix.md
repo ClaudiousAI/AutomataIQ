@@ -34,7 +34,7 @@
 
 | Requirement ID | Description | Module | Status | Phase | Verify |
 |---|---|---|---|---|---|
-| FR-001 | Source registry (CRUD, tier, active status, schedule, content hash) | Discovery Engine | Not Started | 4 | Integration |
+| FR-001 | Source registry (CRUD, tier, active status, schedule, content hash) | Discovery Engine | In Progress | 4 | Integration |
 | FR-002 | Source-specific acquisition (HTML, RSS/API, doc, sitemap) | Discovery Engine | Not Started | 4 | Integration |
 | FR-003 | Continuous ingestion with Saturday six-day reporting boundary | Discovery Engine | Not Started | 4, 11 | Integration |
 | FR-004 | Source tiering by authority (Tier 1–6) | Discovery Engine | Not Started | 4 | Unit |
@@ -47,7 +47,7 @@
 
 | Requirement ID | Description | Module | Status | Phase | Verify |
 |---|---|---|---|---|---|
-| FR-008 | Versioned snapshots (policy-compliant storage + normalized snapshot) | Evidence Engine | Not Started | 5 | Integration |
+| FR-008 | Versioned snapshots (policy-compliant storage + normalized snapshot) | Evidence Engine | In Progress | 5 | Integration |
 | FR-009 | Lexical and semantic diff generation between versions | Change Detection | Not Started | 5 | Integration |
 | FR-010 | Change classification (new capability, enhancement, clarification, deprecation, architecture, event, no meaningful change) | Change Detection | Not Started | 5 | Eval |
 | FR-011 | Evidence confidence scoring (authority, recency, corroboration, specificity) | Evidence Engine | Not Started | 5 | Unit |
@@ -64,7 +64,7 @@
 | FR-016 | Automation-type classification (workflow, RPA, document, API, event-driven, AI-assisted, agentic, predictive, custom) | Automation Intelligence | Not Started | 6 | Eval |
 | FR-017 | Business problem and pre-automation process capture | Automation Intelligence | Not Started | 6 | Contract |
 | FR-018 | Benefits recorded only when stated; inferred benefits flagged explicitly | Automation Intelligence | Not Started | 6 | Contract |
-| FR-019 | Taxonomy mapping across FI/CO, SD, MM, PP, QM, PM, EWM, TM, PS, PLM, MDG, GRC, Treasury, CRM, HCM, procurement, industries | Automation Intelligence | Not Started | 6 | Unit |
+| FR-019 | Taxonomy mapping across FI/CO, SD, MM, PP, QM, PM, EWM, TM, PS, PLM, MDG, GRC, Treasury, CRM, HCM, procurement, industries | Automation Intelligence | In Progress | 6 | Unit |
 | FR-020 | Canonical automation IDs assigned with temporal lineage | Automation Intelligence | Not Started | 6 | Contract |
 
 ### Architecture Reconstruction
@@ -107,12 +107,12 @@
 
 | Requirement ID | Description | Module | Status | Phase | Verify |
 |---|---|---|---|---|---|
-| FR-038 | Knowledge graph linking (sources, findings, automations, products, processes, industries, technologies, APIs, events, architectures, opportunities) | Knowledge Graph | Not Started | 9 | Integration |
+| FR-038 | Knowledge graph linking (sources, findings, automations, products, processes, industries, technologies, APIs, events, architectures, opportunities) | Knowledge Graph | In Progress | 9 | Integration |
 | FR-039 | Temporal queries (what changed in last 30 / 90 / 180 days) | Knowledge Graph | Not Started | 9 | Integration |
 | FR-040 | Cross-domain queries (e.g. AI automation affecting MM + manufacturing) | Knowledge Graph | Not Started | 9 | Integration |
 | FR-041 | Evidence and confidence at fact/relationship level | Knowledge Graph | Not Started | 9 | Contract |
 | FR-042 | End-to-end lineage queryable (source → extraction → validation → score → report) | Knowledge Graph | Not Started | 9 | E2E |
-| FR-043 | Semantic search + structured filters (hybrid vector + facets) | Search | Not Started | 9 | Integration |
+| FR-043 | Semantic search + structured filters (hybrid vector + facets) | Search | In Progress | 9 | Integration |
 | FR-044 | Related-pattern and reusable-architecture recommendations | Knowledge Graph | Not Started | 9 | Integration |
 
 ### Reporting
@@ -170,10 +170,10 @@
 | NFR-001 | **Auditability** — every report finding traceable to evidence | Governance & Ops | Not Started | 9, 11 | E2E |
 | NFR-002 | **Reliability** — Saturday report retries/alerts; never publish incomplete | Reporting | Not Started | 11 | E2E |
 | NFR-003 | **Scalability** — ingestion and analysis workers scale independently | Platform | Not Started | 14 | Ops |
-| NFR-004 | **Security** — SSO, RBAC, tenant isolation, encrypted secrets | Platform | In Progress | 2, 13 | Security |
+| NFR-004 | **Security** — SSO, RBAC, tenant isolation, encrypted secrets | Platform | Done | 2, 13 | Security |
 | NFR-005 | **Observability** — OTel metrics/logs/traces; cost and quality dashboards | Platform | In Progress | 2 | Ops |
 | NFR-006 | **Maintainability** — typed contracts, versioned prompts/models/classifiers | Platform | In Progress | 6, 12 | Contract |
-| NFR-007 | **Recoverability** — idempotent, replayable jobs | Platform | In Progress | 4, 5 | Unit |
+| NFR-007 | **Recoverability** — idempotent, replayable jobs | Platform | Done | 4, 5 | Unit |
 | NFR-008 | **Explainability** — score and confidence rationale always available | Scoring Engine | Not Started | 8 | Contract |
 | NFR-009 | **Performance** — search p95 < 3s; graph p95 < 2s; Saturday report < 30min | Platform | Not Started | 9, 11, 14 | Performance |
 | NFR-010 | **Availability** — 99.5% workspace target; ingestion resilient via queues | Platform | Not Started | 14 | Ops |
@@ -190,9 +190,9 @@
 
 | Type | Total | Not Started | In Progress | Done |
 |---|---|---|---|---|
-| FR | 64 | 60 | 2 | 2 |
-| NFR | 14 | 10 | 4 | 0 |
-| **Total** | **78** | **70** | **6** | **2** |
+| FR | 64 | 55 | 7 | 2 |
+| NFR | 14 | 10 | 2 | 2 |
+| **Total** | **78** | **65** | **9** | **4** |
 
 ---
 

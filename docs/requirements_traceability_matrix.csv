@@ -1,12 +1,12 @@
 Requirement ID,Type,Description,Module,Capability,Phase,Verify,Status
-FR-001,Functional,Source registry (CRUD tier active status schedule content hash),Discovery Engine,C01,4,Integration,Not Started
+FR-001,Functional,Source registry (CRUD tier active status schedule content hash),Discovery Engine,C01,4,Integration,In Progress
 FR-002,Functional,Source-specific acquisition (HTML RSS/API doc sitemap),Discovery Engine,C01,4,Integration,Not Started
 FR-003,Functional,Continuous ingestion with Saturday six-day reporting boundary,Discovery Engine,C01,4 11,Integration,Not Started
 FR-004,Functional,Source tiering by authority (Tier 1–6),Discovery Engine,C01,4,Unit,Not Started
 FR-005,Functional,Provenance capture (URL retrieved_at version hash) on every finding,Discovery Engine,C01,4,Contract,Not Started
 FR-006,Functional,Change gating — skip unchanged content before expensive analysis,Change Detection,C01,5,Integration,Not Started
 FR-007,Functional,Crawler policy compliance (robots.txt terms rate limits auth boundaries),Discovery Engine,C01,4,Security,Not Started
-FR-008,Functional,Versioned snapshots (policy-compliant storage + normalized snapshot),Evidence Engine,C02,5,Integration,Not Started
+FR-008,Functional,Versioned snapshots (policy-compliant storage + normalized snapshot),Evidence Engine,C02,5,Integration,In Progress
 FR-009,Functional,Lexical and semantic diff generation between versions,Change Detection,C02,5,Integration,Not Started
 FR-010,Functional,Change classification (7 classes: new enhancement clarification deprecation architecture event no-meaningful),Change Detection,C02,5,Eval,Not Started
 FR-011,Functional,Evidence confidence scoring (authority recency corroboration specificity),Evidence Engine,C02,5,Unit,Not Started
@@ -17,7 +17,7 @@ FR-015,Functional,Automation pattern extraction (process area products trigger i
 FR-016,Functional,Automation-type classification (workflow RPA document API event-driven AI-assisted agentic predictive custom),Automation Intelligence,C03,6,Eval,Not Started
 FR-017,Functional,Business problem and pre-automation process capture,Automation Intelligence,C03,6,Contract,Not Started
 FR-018,Functional,Benefits recorded only when stated; inferred benefits flagged explicitly,Automation Intelligence,C03,6,Contract,Not Started
-FR-019,Functional,Taxonomy mapping across FI/CO SD MM PP QM PM EWM TM PS PLM MDG GRC Treasury CRM HCM procurement industries,Automation Intelligence,C03,6,Unit,Not Started
+FR-019,Functional,Taxonomy mapping across FI/CO SD MM PP QM PM EWM TM PS PLM MDG GRC Treasury CRM HCM procurement industries,Automation Intelligence,C03,6,Unit,In Progress
 FR-020,Functional,Canonical automation IDs assigned with temporal lineage,Automation Intelligence,C03,6,Contract,Not Started
 FR-021,Functional,Architectural flow extraction (trigger→data→processing→AI→decision→workflow→API/event→target→monitoring),Architecture Reconstruction,C04,7,Eval,Not Started
 FR-022,Functional,Technology identification (S/4HANA BTP Integration Suite APIs Event Mesh Build Process Automation AI Data Cloud Datasphere HANA Cloud ALM),Architecture Reconstruction,C04,7,Eval,Not Started
@@ -36,12 +36,12 @@ FR-034,Functional,Weighted scoring (7 metrics − complexity penalty) per C06 we
 FR-035,Functional,Score vector + rationale per metric stored and exposed,Scoring Engine,C06,8,Contract,Not Started
 FR-036,Functional,Reviewer override with previous/new value + actor + reason; audit trail,Scoring Engine,C06,8,Contract,Not Started
 FR-037,Functional,Deterministic ranking for Saturday report and backlog (stable tie-break),Scoring Engine,C06,8,Unit,Not Started
-FR-038,Functional,Knowledge graph linking (sources findings automations products processes industries technologies APIs events architectures opportunities),Knowledge Graph,C07,9,Integration,Not Started
+FR-038,Functional,Knowledge graph linking (sources findings automations products processes industries technologies APIs events architectures opportunities),Knowledge Graph,C07,9,Integration,In Progress
 FR-039,Functional,Temporal queries (what changed in last 30/90/180 days),Knowledge Graph,C07,9,Integration,Not Started
 FR-040,Functional,Cross-domain queries (e.g. AI automation affecting MM + manufacturing),Knowledge Graph,C07,9,Integration,Not Started
 FR-041,Functional,Evidence and confidence at fact/relationship level,Knowledge Graph,C07,9,Contract,Not Started
 FR-042,Functional,End-to-end lineage queryable (source→extraction→validation→score→report),Knowledge Graph,C07,9,E2E,Not Started
-FR-043,Functional,Semantic search + structured filters (hybrid vector + facets),Search,C07,9,Integration,Not Started
+FR-043,Functional,Semantic search + structured filters (hybrid vector + facets),Search,C07,9,Integration,In Progress
 FR-044,Functional,Related-pattern and reusable-architecture recommendations,Knowledge Graph,C07,9,Integration,Not Started
 FR-045,Functional,Report composition (executive summary meaningful changes automation findings top opportunities),Reporting,C08,11,E2E,Not Started
 FR-046,Functional,Detailed Automation Cards with architecture and evidence,Reporting,C08,11,E2E,Not Started
@@ -66,10 +66,10 @@ FR-064,Functional,Recommendation layer (what to build what to replace reusable a
 NFR-001,Non-Functional,Auditability — every report finding traceable to evidence,Governance & Ops,NFR,9 11,E2E,Not Started
 NFR-002,Non-Functional,Reliability — Saturday report retries/alerts; never publish incomplete,Reporting,NFR,11,E2E,Not Started
 NFR-003,Non-Functional,Scalability — ingestion and analysis workers scale independently,Platform,NFR,14,Ops,Not Started
-NFR-004,Non-Functional,Security — SSO RBAC tenant isolation encrypted secrets,Platform,NFR,2 13,Security,In Progress
+NFR-004,Non-Functional,Security — SSO RBAC tenant isolation encrypted secrets,Platform,NFR,2 13,Security,Done
 NFR-005,Non-Functional,Observability — OTel metrics/logs/traces; cost and quality dashboards,Platform,NFR,2,Ops,In Progress
 NFR-006,Non-Functional,Maintainability — typed contracts versioned prompts/models/classifiers,Platform,NFR,6 12,Contract,In Progress
-NFR-007,Non-Functional,Recoverability — idempotent replayable jobs,Platform,NFR,4 5,Unit,In Progress
+NFR-007,Non-Functional,Recoverability — idempotent replayable jobs,Platform,NFR,4 5,Unit,Done
 NFR-008,Non-Functional,Explainability — score and confidence rationale always available,Scoring Engine,NFR,8,Contract,Not Started
 NFR-009,Non-Functional,Performance — search p95 < 3s graph p95 < 2s report < 30min,Platform,NFR,9 11 14,Performance,Not Started
 NFR-010,Non-Functional,Availability — 99.5% workspace target; ingestion resilient via queues,Platform,NFR,14,Ops,Not Started

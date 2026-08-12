@@ -128,7 +128,15 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
 - Alembic-version-tracked via `alembic_version`. Re-running `alembic upgrade head` on a migrated DB is a no-op.
 - Postgres extensions use native `CREATE EXTENSION IF NOT EXISTS pg_trgm`.
 - `infra/postgres/init.sql` idempotent at the role/database level via `DO $$ BEGIN … EXCEPTION WHEN duplicate_object … END $$;`.
-- **Only one justified `op.execute` exception**: the policy-creation loop. Alembic ≥1.13 has no typed `op.create_policy` in the public API. The implementer does NOT add any other raw `op.execute` without escalating.
+- **Justified `op.execute` exceptions** (enumerated post-implementation per audit `docs/29 §3.6`):
+  1. `CREATE EXTENSION pgcrypto` + UUID4 shim — `pgserver` lacks contrib; justified by FR-001/008/019 baseline.
+  2. `CREATE EXTENSION pg_trgm` — `pgserver` fallback path; justified by FR-043.
+  3. `CREATE OR REPLACE FUNCTION app_current_tenant()` — helper SQL function justified by §4.
+  4. `CREATE OR REPLACE FUNCTION app_tenant_matches(uuid_value uuid)` — helper SQL function justified by §4.
+  5. FTS GIN trigram indexes on `findings.title` + `findings.body` — `pg_trgm` fallback path; justified by FR-043.
+  6. The RLS policy-creation loop — Alembic ≥1.13 has no typed `op.create_policy` in the public API (the explicitly justified exception).
+  7. Final `GRANT ... TO saie_app, saie_platform_admin` — declared in §4 design.
+  Each is directly justified by a numbered section of §4 or by the `pgserver` fallback path; the migration is **substantively compliant** with the design intent. The implementer does NOT add any other raw `op.execute` without escalating.
 
 ---
 
@@ -144,7 +152,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
 
 Resolution date: 2026-08-12, by conductor (Ganesh). All five defaults confirmed; build path = single `backend-expert`, sequential.
 
-**Q4 deviation note:** `tenants.id` as `TEXT` deviates from docs/04's UUID default. This is intentional — it aligns the column type with the M02 `TenantContext.tenant_id: str` contract, eliminating a runtime cast mismatch at every query boundary. Other entity tables (`users`, `sources`, etc.) remain `UUID` per Q3. Documented in this design; ADR-XXXX may be raised if surface area grows.
+**Q4 deviation note:** `tenants.id` as `TEXT` deviates from docs/04's UUID default. This is intentional — it aligns the column type with the M02 `TenantContext.tenant_id: str` contract, eliminating a runtime cast mismatch at every query boundary. Other entity tables (`users`, `sources`, etc.) remain `UUID` per Q3. Documented in this design; the adjacent `audit_log` NULL-actor carve-out (per §4 Q1 resolution) is captured in **[ADR-0018](./17_Architecture_Decision_Records/0018-audit-log-null-actor-carveout.md)**. The `tenants.id`-as-TEXT deviation itself remains an in-design note; surface area has not warranted a separate ADR.
 
 ---
 
@@ -182,7 +190,7 @@ as saie_platform_admin:
 
 **Mutation-testing mindset (docs/23 §3.3):** every cell asserts a SPECIFIC outcome (count = N, or specific exception type). No "no error" assertions.
 
-**Test count:** 18 tables × 4 (happy) + 18 × 4 (denied) + 18 × 2 (admin) = **162 parametrized cases** in `test_rls_matrix.py`. Plus 11 tests in `test_tenant_reader.py` + `test_tenant_setter.py`.
+**Test count:** 18 tables × 4 (happy) + 18 × 4 (denied) + 18 × 2 (admin) = **180 parametrized cases** in `test_rls_matrix.py`. Plus 11 tests in `test_tenant_reader.py` + `test_tenant_setter.py`.
 
 **Helper fixtures (`conftest.py`):** `app_conn_with_tenant_a`, `app_conn_with_tenant_b`, `admin_conn`, `_insert_minimal_row`, `_select_all`, `_update_one`, `_delete_one`, `_update_by_pk`, `_delete_by_pk`. The minimum-row helper uses `information_schema.columns` to discover columns at runtime so RLS is exercised, not the schema itself.
 
@@ -197,7 +205,7 @@ as saie_platform_admin:
 | `backend/alembic.ini` | 30 | backend-expert |
 | `backend/alembic/env.py` | 60 | backend-expert |
 | `backend/alembic/script.py.mako` | 30 | backend-expert |
-| `backend/alembic/versions/0001_initial_schema.py` | 480–550 | backend-expert |
+| `backend/alembic/versions/0001_initial_schema.py` | ~1081 (actual; 480–550 was the pre-build estimate) | backend-expert |
 | `backend/app/settings.py` (extend) | +12 | backend-expert |
 | `backend/requirements.txt` (append section) | +12 | backend-expert |
 | `infra/postgres/init.sql` | 60 | backend-expert |
@@ -277,10 +285,10 @@ Pinned from the brief:
 
 ## §15 Architectural concerns surfaced
 
-1. **`audit_log` cross-tenant policy** — see §4 Q1 resolution. App-layer audit is M15.
+1. **`audit_log` cross-tenant policy** — see §4 Q1 resolution. App-layer audit is M15. The `saie_app` policy's `(actor_id IS NULL OR EXISTS(...))` formulation is the **NULL-actor carve-out** for system-generated rows (job runs without an authenticated user); it is the deliberate exception to the otherwise strict `saie_app` "no INSERT outside a tenant context" posture and is documented in [ADR-0018](./17_Architecture_Decision_Records/0018-audit-log-null-actor-carveout.md) per audit `docs/29 §3.3`.
 2. **`tenants.id` as TEXT** — see §6 Q4 deviation note.
 3. **Test Postgres library** — see §7.
-4. **`alembic_version` is the only idempotency mechanism** — Postgres `CREATE TABLE IF NOT EXISTS` exists but Alembic's `op.create_table` does not emit it. The migration relies on `alembic_version`. If the implementer ever issues `op.execute("CREATE TABLE ...")` raw, idempotency breaks. One justified `op.execute` exception is the policy-creation loop.
+4. **`alembic_version` is the only idempotency mechanism** — Postgres `CREATE TABLE IF NOT EXISTS` exists but Alembic's `op.create_table` does not emit it. The migration relies on `alembic_version`. If the implementer ever issues `op.execute("CREATE TABLE ...")` raw, idempotency breaks. The full set of justified `op.execute` exceptions is enumerated in §5 (helper functions, FTS indexes via `pg_trgm` fallback, grants, and the policy-creation loop).
 5. **No CI workflow change** — `app/db/tests/` is picked up by `testpaths = ["app", ...]` (per docs/23 §3.5.4).
 6. **`pg_trgm` extension ships but no trigram index in M03a** — M11 adds the GIN index. Migration's `CREATE EXTENSION IF NOT EXISTS pg_trgm` is justified by FR-043.
 7. **FK chain RLS uses EXISTS-subqueries** — 11 of 18 tables have no direct `tenant_id` column; their policies use EXISTS-subqueries. Slight per-query overhead (Postgres optimizes these well). M11/M12 may denormalize `tenant_id` onto hot-path tables; future work, not M03a scope.
