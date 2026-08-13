@@ -26,7 +26,7 @@ The storage-layer remainder of M03 lands. Redis Streams + DLQ consumer groups, t
 
 ## Module
 
-**M03b** — the second slice of [M03 (Database & Storage)](../../22_Module_Roadmap.md#m03--database--storage) in [`docs/22 §5`](../22_Module_Roadmap.md). M03a (Schema + RLS substrate) landed in PR #4 (`2a7d936`); the audit-follow-up closure landed in PR #5 (`89cddf1`). M03b is the storage-layer remainder that M03a deliberately deferred.
+**M03b** — the second slice of [M03 (Database & Storage)](../../22_Module_Roadmap.md#m03--database--storage) in [`docs/22 §5`](../22_Module_Roadmap.md). M03a (Schema + RLS substrate) landed in PR #4 (`2a7d936`); the audit-follow-up closure landed in PR #5 (`89cddf1`). The pre-merge audit findings that drove the closure are recorded in [`docs/29_Audit_Report_Pre_M03a_Close.md`](../29_Audit_Report_Pre_M03a_Close.md); the M03a design rationale is in [`docs/28_M03a_Design.md`](../28_M03a_Design.md). M03b is the storage-layer remainder that M03a deliberately deferred.
 
 ## Linked Requirement ID(s)
 
