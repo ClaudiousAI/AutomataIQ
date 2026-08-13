@@ -74,7 +74,7 @@ The four Protocol classes. Method bodies are not in this file — only signature
 | Method | Returns | Tenant-isolation rule | Notes |
 |---|---|---|---|
 | `publish(tenant_id, stream: str, payload: bytes, *, idempotency_key: str \| None = None) -> str` | `str` (message ID) | Key prefix: `t:{tenant_id}:s:{stream}` | Idempotent on `idempotency_key` (NFR-007). |
-| `consume(tenant_id, stream: str, group: str, consumer: str, block_ms: int = 5000) -> list[StreamMessage]` | `list[StreamMessage]` | Reads only from `t:{tenant_id}:s:{stream}` | Auto-claim stale PEL entries on startup. |
+| `consume(tenant_id, stream: str, group: str, consumer: str, block_ms: int = 5000) -> list[StreamMessage]` | `list[StreamMessage]` | Reads only from `t:{tenant_id}:s:{stream}` | **Locked (Q2, 2026-08-13):** per-call `XAUTOCLAIM` for entries idle ≥ 60 s. No separate `init_consumer_group` method; no M04 startup hook dependency. The 60 s threshold is configurable per consumer-group; the default is 60 s. |
 | `ack(tenant_id, stream: str, group: str, message_id: str) -> None` | `None` | Confirms tenant before ACK | Cross-tenant ACK raises. |
 | `dlq_publish(tenant_id, source_stream: str, original_payload: bytes, reason: str) -> str` | `str` | DLQ key: `t:{tenant_id}:dlq:{source_stream}` | Reason is recorded in payload metadata for replay triage. |
 | `reconnect() -> None` | `None` | n/a (transport-level) | Re-establishes the connection pool with exponential backoff. |
@@ -88,7 +88,7 @@ The four Protocol classes. Method bodies are not in this file — only signature
 | `search(tenant_id, query_vector: list[float], *, top_k: int = 10, filters: dict \| None = None) -> list[ScoredPoint]` | `list[ScoredPoint]` | The adapter **always** appends `must=[FieldCondition(key="tenant_id", match=tenant_id)]` to `filters`; callers cannot override this | Filters are additive — the tenant filter is non-removable. |
 | `delete_by_tenant(tenant_id, *, filter: dict \| None = None) -> None` | `None` | Refuses if `filter` would expand scope beyond the tenant | Used by tenant-offboarding (M16). |
 | `collection_health() -> CollectionHealth` | `CollectionHealth` | n/a | Reports vector count, segment count, p95 lat. |
-| `payload_filter_builder() -> FilterBuilder` | `FilterBuilder` | Helper that exposes `.tenant(tenant_id)` and `.range()`/`.term()` builders; the tenant filter is added in `.build()` and cannot be skipped | Lets M11 build expressive filters without ever touching the underlying Qdrant filter shape. |
+| `payload_filter_builder() -> FilterBuilder` | `FilterBuilder` | **Locked (Q3, 2026-08-13):** no-arg builder. The builder's `.tenant(tenant_id: UUID)` method MUST be called as the first chained call before any other builder method. Calling `.range(...)`, `.term(...)`, or `.build()` without a prior `.tenant(...)` raises `TenantIsolationViolation`. `.build()` always prepends the tenant predicate (`must=[FieldCondition(key="tenant_id", match=tenant_id)]`) and the caller cannot remove it. This is the only acceptable signature: the alternative (constructor with default `tenant_id`, overridable by `.tenant(other)`) was rejected as a foot-gun that lets "forgetful" callers drift from the locked invariant. Integration test `backend/tests/integration/test_qdrant_filter_builder.py::test_builder_requires_tenant_first` pins this behavior at runtime; the AC-11 lint cannot enforce it statically because builder chain state is not visible at parse time. |
 
 ### `Neo4jAdapter`
 
@@ -115,11 +115,49 @@ The four Protocol classes. Method bodies are not in this file — only signature
 ## Cross-cutting properties (locked by the architect)
 
 1. **`tenant_id` is `UUID`** across all four Protocols. The string form `"t:<uuid>"` lives only in the adapter implementations (as the key prefix), not in the public interface.
-2. **No method accepts an "admin override" or "skip tenant filter" parameter.** Cross-tenant access is a bug; if a tenant truly needs to see another tenant's data, the fix is a shared tenant ID upstream, not an adapter escape hatch.
+2. **No tenant-scoped method accepts an "admin override" or "skip tenant filter" parameter.** Cross-tenant access is a bug; if a tenant truly needs to see another tenant's data, the fix is a shared tenant ID upstream, not an adapter escape hatch. (Note: cluster-scoped methods — see §Cluster-scoped methods below — are not tenant-scoped and are not subject to this rule.)
 3. **Errors are typed, not opaque.** Every method raises either a known `SAIEError` subclass (`TenantIsolationViolation`, `StoreUnavailable`, `ConstraintViolation`, `ObjectNotFound`) or a domain-specific exception; no method raises a bare `Exception` or swallows errors silently.
 4. **Idempotency is documented per method.** Methods marked **idempotent** are safe to retry on network failure without producing duplicates; methods marked **non-idempotent** require a caller-side idempotency key.
 5. **No store-side cross-tenant joins.** The four adapters do not call each other; cross-store correlation is M11's job via the Postgres `findings` table, not via adapter composition.
 6. **`@runtime_checkable`** is set on each Protocol so M04's wiring code can do `isinstance(adapter, RedisAdapter)` defensively at startup.
+
+## Conductor decisions (locked 2026-08-13, post-`006` commit `da6d0c8`)
+
+Three design calls landed after the architect's first pass. Each preserves the locked cross-cutting properties while resolving a real contradiction in `006`.
+
+### Q1 (a): the AC-11 invariant is amended, not split
+
+The architect flagged that `006`'s `AC-11` says "every public method accepts `tenant_id` as the first positional argument" but the method table itself defines four methods that don't take `tenant_id`. This was a real contradiction. The conductor's call: **amend `006` to clarify that AC-11 applies to tenant-scoped methods only**, and document the cluster-scoped set in this section. The alternative — splitting each Protocol into `*Tenant` + `*Cluster` — was rejected because it doubles the Protocol surface and complicates M04's wiring code. The alternative — moving the cluster methods off the Protocol into a separate `MonitoringAdapter` — was rejected because M04's plan calls them via the four adapter classes.
+
+**Amended AC-11 statement (replaces the original "every public method on every adapter accepts `tenant_id`…" wording in `001` AC-11):** *Every public method that returns tenant-scoped data accepts `tenant_id` as the first positional argument and uses it as the first predicate in every store-side query, key, or access check — without exception, without escape hatch, without an "admin override" path. Cluster-scoped observability methods (see §Cluster-scoped methods below) are the explicit exception; they return cluster-level health, not tenant-scoped data, and are not subject to this invariant.*
+
+### Q2 (a): `RedisAdapter.consume` auto-claim is per-call, lazy
+
+The architect flagged that `006` said "auto-claim stale PEL entries on startup" without defining "startup." The conductor's call: **per-call `XAUTOCLAIM` with a 60 s idle threshold** is the locked behavior. No separate `init_consumer_group` method; no M04 startup hook. The reasoning: per-call lazy auto-claim has the simplest failure mode (no startup hook dependency on M04; if a consumer crashes, the next `consume` call from the same group claims the stale entries). The 60 s idle threshold is configurable per consumer-group; the default is 60 s; shorter values trade Redis traffic for faster recovery, longer values leave messages stuck longer. This call is now locked in the `RedisAdapter.consume` contract row above.
+
+### Q3 (P2): `FilterBuilder` is no-arg, `.tenant()` is the required first call
+
+The architect's first design proposed `payload_filter_builder(tenant_id)` with overridable `.tenant()` (P1). The conductor's call: **keep `006`'s no-arg builder and require `.tenant()` as the first chained call** (P2). The reasoning: P1's overridable `.tenant()` is a foot-gun that lets "forgetful" callers silently drift from the locked invariant (a caller who calls `.tenant(other_tenant)` and gets the explicit `TenantIsolationViolation` raise has discovered a real cross-tenant access attempt; a caller who calls `.tenant(other_tenant)` and gets a silent no-op has not). P2's required-first-call rule converts the foot-gun into a hard raise; the integration test `backend/tests/integration/test_qdrant_filter_builder.py::test_builder_requires_tenant_first` pins the raise. This call is now locked in the `QdrantAdapter.payload_filter_builder` contract row above.
+
+## Cluster-scoped methods (intentionally not tenant-bound)
+
+These four methods are the explicit exception to `006`'s amended AC-11 invariant. They are cluster-level observability methods that return health/metadata about the store itself, not about any tenant's data within it. They are documented here so the AC-11 lint test (`backend/tests/security/test_tenant_isolation_pattern.py`) knows to skip them.
+
+| Method | Protocol | Why it is cluster-scoped |
+|---|---|---|
+| `collection_health() -> CollectionHealth` | `QdrantAdapter` | Returns vector count, segment count, p95 latency for the entire `saie_embeddings` collection. M16's `/health/qdrant` endpoint surfaces it; there is no per-tenant collection. |
+| `payload_filter_builder() -> FilterBuilder` | `QdrantAdapter` | Returns a builder object, not tenant-scoped data. The tenant binding is enforced at `.tenant()` call time (see Q3 above), not at builder construction time. |
+| `graph_health() -> GraphHealth` | `Neo4jAdapter` | Returns constraint count, index health, memory pressure for the entire graph. M16's `/health/neo4j` endpoint surfaces it. |
+| `bucket_health() -> BucketHealth` | `MinioAdapter` | Returns versioning state, lifecycle-rule state, total object count for the bucket. M16's `/health/minio` endpoint surfaces it. |
+
+`RedisAdapter` has no cluster-scoped methods; `reconnect()` is a transport-level operation that doesn't return data, and `stream_health(tenant_id)` is tenant-scoped.
+
+## Out of Scope
+
+- The four adapter **implementations** — those ship in `002`, `003`, `004`, `005` respectively.
+- The M04 wiring code (FastAPI dependency injection of the four adapters; Celery task helpers that wrap them).
+- The AC-11 lint test scaffolding — the architect designs the test (`backend/tests/security/test_tenant_isolation_pattern.py`) and the `006` implementer lands it in the same PR. The lint is the *build-time* gate; `006`'s `AC-6c` is the *import-time* gate.
+- Any vendor-specific code. The Protocols are vendor-agnostic — the implementers are the vendor-specific layer.
 
 ## Out of Scope
 
