@@ -12,7 +12,7 @@ filed: 2026-08-13
 filed_by: orchestrator
 status: open
 parent_local_id: null
-sub_issue_local_ids: [002, 003, 004, 005]
+sub_issue_local_ids: [002, 003, 004, 005, 006]
 mirror_pending: true
 ---
 
@@ -86,10 +86,11 @@ The storage-layer remainder of M03 lands. Redis Streams + DLQ consumer groups, t
 | [`003`](./003-m03b-qdrant-collection-payload.md) | feat | feat(data): provision Qdrant collection + payload schema + HNSW | M03b · Qdrant | AC-1, AC-3, AC-7, AC-8 |
 | [`004`](./004-m03b-neo4j-constraints-seed.md) | feat | feat(data): provision Neo4j constraints + seed for 11 node kinds | M03b · Neo4j | AC-1, AC-4, AC-7, AC-8 |
 | [`005`](./005-m03b-minio-buckets-lifecycle.md) | feat | feat(data): provision MinIO buckets + versioning + lifecycle | M03b · MinIO | AC-1, AC-5, AC-7, AC-8 |
+| [`006`](./006-m03b-storage-adapter-interfaces.md) | feat | feat(data): M03b/M04 storage adapter interfaces (shared Protocols) | M03b · spine | AC-6, AC-11 |
 
-The M03b/M04 interface contract (`RedisAdapter`, `QdrantAdapter`, `Neo4jAdapter`, `MinioAdapter` Protocols) is captured in sub-issue `002` and inherited by `003`, `004`, `005` — they are not a separate sub-issue, by design: the contract is the Redis-side deliverable because Redis is the smallest, fastest-iterating surface, and the other three adapters copy the shape.
+The M03b/M04 interface contract (`RedisAdapter`, `QdrantAdapter`, `Neo4jAdapter`, `MinioAdapter` Protocols) is captured in sub-issue [`006`](./006-m03b-storage-adapter-interfaces.md) as the **single source of truth**. The four store-side sub-issues `002`/`003`/`004`/`005` ship only the **implementations** and import the Protocols from `006` — they do not define the shape themselves, and they do not import from each other. This is the property the M04 import smoke test (`AC-6c`) and the AC-11 lint both depend on: drift across the four PRs is caught at import time and at build time, not by reviewer reading.
 
-The `006-m03b-storage-adapter-interfaces.md` slice captures the **Protocol classes themselves** (AC-6) — it is filed as a follow-up sub-issue once the four store-side slices have agreed on the shape in their own sub-issues. Per `docs/25 §7`, the sub-issue is filed *after* the architect's design lands, not before.
+`006` is filed **before** the four store-side slices begin implementation, by conductor judgment call: the Protocol contract is the dependency gate, not a coordination convention. This is an explicit exception to the `docs/25 §7` "file after design" default — the default assumes a per-PR contract; here the contract is shared, so it must be locked first.
 
 ## Tests Required
 
