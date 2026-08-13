@@ -12,7 +12,7 @@ filed: 2026-08-13
 filed_by: orchestrator
 status: open
 parent_local_id: null
-sub_issue_local_ids: [002, 003, 004, 005, 006]
+sub_issue_local_ids: [002, 003, 004, 005, 006, 007]
 mirror_pending: true
 ---
 
@@ -87,6 +87,7 @@ The storage-layer remainder of M03 lands. Redis Streams + DLQ consumer groups, t
 | [`004`](./004-m03b-neo4j-constraints-seed.md) | feat | feat(data): provision Neo4j constraints + seed for 11 node kinds | M03b · Neo4j | AC-1, AC-4, AC-7, AC-8 |
 | [`005`](./005-m03b-minio-buckets-lifecycle.md) | feat | feat(data): provision MinIO buckets + versioning + lifecycle | M03b · MinIO | AC-1, AC-5, AC-7, AC-8 |
 | [`006`](./006-m03b-storage-adapter-interfaces.md) | feat | feat(data): M03b/M04 storage adapter interfaces (shared Protocols) | M03b · spine | AC-6, AC-11 |
+| [`007`](./007-m03b-provisioner-cli.md) | feat | feat(data): M03b provisioner CLI - saie.bootstrap idempotent entry point | M03b · glue | AC-1, AC-7, AC-9 |
 
 The M03b/M04 interface contract (`RedisAdapter`, `QdrantAdapter`, `Neo4jAdapter`, `MinioAdapter` Protocols) is captured in sub-issue [`006`](./006-m03b-storage-adapter-interfaces.md) as the **single source of truth**. The four store-side sub-issues `002`/`003`/`004`/`005` ship only the **implementations** and import the Protocols from `006` — they do not define the shape themselves, and they do not import from each other. This is the property the M04 import smoke test (`AC-6c`) and the AC-11 lint both depend on: drift across the four PRs is caught at import time and at build time, not by reviewer reading.
 
@@ -109,7 +110,7 @@ The M03b/M04 interface contract (`RedisAdapter`, `QdrantAdapter`, `Neo4jAdapter`
 ## Definition of Done (epic close)
 
 - [ ] All eleven epic-level ACs above checked (`AC-1` … `AC-11`).
-- [ ] All sub-issues `002`, `003`, `004`, `005` (and `006` if filed) closed.
+- [ ] All sub-issues `002`, `003`, `004`, `005`, `006`, `007` closed.
 - [ ] M03 module-exit gate per [`docs/22 §6`](../22_Module_Roadmap.md#6-module-exit-gate-checklist-applied-to-every-module) green:
   - Schema migrated on dev + staging; RLS tests green; bootstrap reproducible in a container; storage layout documented under `infra/`.
   - Linked RTM IDs in `docs/16` reflect completion.
