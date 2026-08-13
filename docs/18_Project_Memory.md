@@ -2,7 +2,7 @@
 
 **Product:** SAP Automation Intelligence Engine (SAIE)
 **Document status:** Living — update on every significant decision or context change.
-**Last updated:** 2026-08-13 (Wave 1 — M03a Schema + RLS Substrate closed via PR #4; audit follow-ups resolved)
+**Last updated:** 2026-08-13 (Wave 1 — M03a Schema + RLS Substrate closed via PR #4; audit follow-ups resolved; M03a CI/runtime gotcha pinned in §6 for the M03b builder)
 
 > This is the project's persistent working memory: context that is non-obvious from the code, current state, decisions, and conventions. Keep it current; treat it as the first place to look when resuming work.
 
@@ -73,6 +73,7 @@ SAIE is an **enterprise multi-agent intelligence platform** that continuously ob
 - **PDF tooling:** this machine lacks `pdftoppm`/poppler; `pypdf` (pip) was installed to extract the master design text. Reinstall note: `pip install pypdf`.
 - **MCP:** `code-review-graph` is enabled (see `CLAUDE.md`); graph auto-updates on file changes.
 - **CI gate contract (pinned in `docs/23 §3.5`):** pytest discovers tests via `backend/pyproject.toml` `testpaths = ["tests", "notifications/tests", "app"]`; the `pythonpath = ["."]` line is REQUIRED so `app/` and `notifications/` are findable from pytest's default import-mode. Removing it silently turns every `from app.<m>.X import ...` into a `ModuleNotFoundError` on the ubuntu runner (local windows venv happens to put cwd on sys.path, masking the bug). Conventional Commit workflow needs `pull-requests: read` + `checks: write` — the `amannn/action-semantic-pull-request@v5` action errors with `Resource not accessible by integration` otherwise. The PR-title gate step writes its result via `>> "$GITHUB_OUTPUT"`, NOT plain `echo` (plain echo goes to stdout, leaving `steps.<id>.outputs` empty and the Fail step always runs).
+- **M03a CI substrate (pinned, fresh from PR #4 — relevant to every storage-layer module that runs Postgres on CI):** the Ubuntu runner needs `apt-get install -y postgresql postgresql-contrib` so the M03a tests can spin a real Postgres (don't trust `services: postgres` alone — the substrate selector is `pytest-postgresql` with `--auth=trust` handling `pg_hba.conf` for the ephemeral test cluster). **Role bootstrap is pure SQL** in `backend/alembic/` and `infra/postgres/init.sql` — do NOT reintroduce psql metacommands (`\c`, `\set`) because the CI runtime has no psql client; psycopg executes the SQL and the metacommands would crash. **`pgcrypto` install requires the `saie_test` database to be owned by `saie_migrator`** before `CREATE EXTENSION pgcrypto` runs, otherwise the Ubuntu CI fails with permission denied on the extension. The **alembic-diagnostic path uses `tempfile.gettempdir()`** so the failure log survives across CI steps — do not hardcode `/tmp` (Windows + macOS agents don't have it). These four are the reasons the M03a PR took five fix commits before Linux CI went green; M03b's Redis/Qdrant/Neo4j/MinIO substrate will hit the same family of issues and should inherit this gotcha verbatim.
 
 ## 7. Definition of Done Pointer
 
