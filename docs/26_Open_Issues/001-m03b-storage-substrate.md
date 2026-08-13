@@ -70,6 +70,7 @@ The storage-layer remainder of M03 lands. Redis Streams + DLQ consumer groups, t
 - [ ] **AC-8** Tenant isolation extends across stores: a cross-tenant Qdrant query returns zero hits; a cross-tenant Neo4j traversal raises; a cross-tenant MinIO object access is denied (FR-057, mirrors the M03a RLS guarantee).
 - [ ] **AC-9** `docs/18` is updated with any new CI / runtime gotcha discovered during the M03b build (per `docs/18 §6` discipline; the M03a gotcha is the model).
 - [ ] **AC-10** All linked RTM IDs (`FR-008`, `FR-038`, `FR-041`, `FR-043`, `NFR-007`, `NFR-009`, `NFR-011`, `NFR-013`) are moved to **Done** in [`docs/16`](../16_Requirement_Traceability_Matrix.md) when the closing PR merges.
+- [ ] **AC-11** **Tenant isolation is a uniform, code-review-enforceable invariant across all four stores.** Every adapter method (`RedisAdapter`, `QdrantAdapter`, `Neo4jAdapter`, `MinioAdapter`) accepts `tenant_id` as the first positional argument and uses it as the first predicate in every store-side query, key, or access check — without exception, without escape hatch, without an "admin override" path. The M03a `app.tenant_id` GUC convention is the model: at the Postgres layer the GUC is set inside a `SET LOCAL` transaction; at the M03b layer the equivalent is "the adapter's first parameter IS the tenant context, and the adapter refuses to construct a query that doesn't filter on it." Enforcement is mechanical, not social: a CI test (`backend/tests/security/test_tenant_isolation_pattern.py`) greps every adapter module for the pattern `tenant_id` as the first parameter and asserts that every public method has it; the test fails the build on regression. The architect designs the test scaffolding (pytest fixture + AST or string-level check); this AC locks the *policy* — that the invariant is uniform across all four stores and that the lint is the enforcer, not human review. (FR-057, FR-008 in spirit, M03a RLS as the model.)
 
 ## Dependencies / Sequencing
 
@@ -101,11 +102,12 @@ The `006-m03b-storage-adapter-interfaces.md` slice captures the **Protocol class
 - **Integration** — MinIO lifecycle on a synthetic aged object (AC-5, NFR-011).
 - **Contract** — `RedisAdapter` / `QdrantAdapter` / `Neo4jAdapter` / `MinioAdapter` Protocol method signatures; M04 import smoke test (AC-6, NFR-013).
 - **Security** — cross-tenant store query returns zero / denied (AC-8, FR-057).
+- **Security / lint** — `backend/tests/security/test_tenant_isolation_pattern.py` asserts every public method on every adapter accepts `tenant_id` as the first parameter (AC-11). The test is the lint; regression fails the build.
 - **CI** — same Ubuntu-runner substrate as M03a: `apt-get install -y postgresql postgresql-contrib` (already in the workflow per the M03a gotcha in `docs/18 §6`); add Redis, Qdrant, Neo4j, MinIO test containers or local installs as required.
 
 ## Definition of Done (epic close)
 
-- [ ] All ten epic-level ACs above checked (`AC-1` … `AC-10`).
+- [ ] All eleven epic-level ACs above checked (`AC-1` … `AC-11`).
 - [ ] All sub-issues `002`, `003`, `004`, `005` (and `006` if filed) closed.
 - [ ] M03 module-exit gate per [`docs/22 §6`](../22_Module_Roadmap.md#6-module-exit-gate-checklist-applied-to-every-module) green:
   - Schema migrated on dev + staging; RLS tests green; bootstrap reproducible in a container; storage layout documented under `infra/`.
